@@ -53,8 +53,10 @@ Game::~Game()
 	delete material1;
 	//delete material2;
 
-	for (auto& e : entities) delete e;
-	for (auto& m : meshes) delete m;
+	//for (auto& e : platformEntity) delete e;
+	//for (auto& m : platformMesh) delete m;
+	delete sphereEntity;
+	delete sphereMesh;
 	delete camera;
 
 	sphereSRV->Release();
@@ -135,11 +137,11 @@ void Game::CreateMatrices()
 // --------------------------------------------------------
 void Game::CreateBasicGeometry()
 {
-	Mesh* sphereMesh = new Mesh("Debug/Models/sphere.obj", device);
-	meshes.push_back(sphereMesh);
+	sphereMesh = new Mesh("Debug/Models/sphere.obj", device);
+	//meshes.push_back(sphereMesh);
 
-	GameEntity* sphere = new GameEntity(sphereMesh, material1);
-	entities.push_back(sphere);
+	sphereEntity = new GameEntity(sphereMesh, material1);
+	//entities.push_back(sphere);
 
 }
 
@@ -172,7 +174,7 @@ void Game::Update(float deltaTime, float totalTime)
 	// Update the camera
 	camera->Update(deltaTime);
 
-	entities[0]->UpdateWorldMatrix();
+	sphereEntity->UpdateWorldMatrix();
 
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
@@ -198,8 +200,8 @@ void Game::Draw(float deltaTime, float totalTime)
 		1.0f,
 		0);
 	
-	vertexBuffer = entities[0]->GetMesh()->GetVertexBuffer();
-	indexBuffer = entities[0]->GetMesh()->GetIndexBuffer();
+	vertexBuffer = sphereEntity->GetMesh()->GetVertexBuffer();
+	indexBuffer = sphereEntity->GetMesh()->GetIndexBuffer();
 
 	// Set buffers in the input assembler
 	//  - Do this ONCE PER OBJECT you're drawing, since each object might
@@ -210,7 +212,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 	context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-	vertexShader->SetMatrix4x4("world", *entities[0]->GetWorldMatrix());
+	vertexShader->SetMatrix4x4("world", *sphereEntity->GetWorldMatrix());
 	vertexShader->SetMatrix4x4("view", camera->GetView());
 	vertexShader->SetMatrix4x4("projection", camera->GetProjection());
 
@@ -227,7 +229,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	pixelShader->SetShader();
 
 	// Finally do the actual drawing
-	context->DrawIndexed(entities[0]->GetMesh()->GetIndexCount(), 0, 0);
+	context->DrawIndexed(sphereEntity->GetMesh()->GetIndexCount(), 0, 0);
 
 	swapChain->Present(0, 0);
 	

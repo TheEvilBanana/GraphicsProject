@@ -59,8 +59,10 @@ private:
 	POINT currentMousePos;
 	POINT difference;
 
-	std::vector<Mesh*> meshes;
-	std::vector<GameEntity*> entities;
+	std::vector<Mesh*> platformMesh;   // Mesh vector for platforms
+	Mesh* sphereMesh;                  // Mesh for ball
+	std::vector<GameEntity*> platformEntity;  // Entity vector for platforms
+	GameEntity* sphereEntity;                 // Entity for ball
 	Camera* camera;
 
 	Material *material1;

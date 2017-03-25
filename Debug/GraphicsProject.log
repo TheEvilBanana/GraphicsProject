@@ -1,5 +1,4 @@
 ﻿  Main.cpp
-  GameEntity.cpp
   Game.cpp
 d:\class stuff\game graphics\graphicsproject\game.cpp(7): warning C4005: 'max': macro redefinition
   c:\program files (x86)\windows kits\8.1\include\shared\minwindef.h(193): note: see previous definition of 'max'
