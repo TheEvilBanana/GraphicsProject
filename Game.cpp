@@ -57,11 +57,8 @@ Game::~Game()
 	for (auto& m : meshes) delete m;
 	delete camera;
 
-	flamesSRV->Release();
-	carpetSRV->Release();
+	sphereSRV->Release();
 	sampler1->Release();
-//	sampler2->Release();
-	//sampler1->Release();
 }
 
 // --------------------------------------------------------
@@ -76,6 +73,7 @@ void Game::Init()
 	LoadShaders();
 	CreateMatrices();
 	CreateBasicGeometry();
+	
 	dirLight1.SetLightValues(XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, -1.0f, 0));
 	dirLight2.SetLightValues(XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(-1.0f, -1.0f, 0));
 
@@ -103,8 +101,7 @@ void Game::LoadShaders()
 	if(!pixelShader->LoadShaderFile(L"Debug/PixelShader.cso"))	
 		pixelShader->LoadShaderFile(L"PixelShader.cso");
 	
-	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Cobble.tif", 0, &flamesSRV);
-	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Carpet.jpg", 0, &carpetSRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Cobble.tif", 0, &sphereSRV);
 
 	D3D11_SAMPLER_DESC sampleDesc = {};
 	sampleDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -113,19 +110,9 @@ void Game::LoadShaders()
 	sampleDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	sampleDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	D3D11_SAMPLER_DESC sampleDesc2 = {};
-	sampleDesc2.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampleDesc2.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampleDesc2.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampleDesc2.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sampleDesc2.MaxLOD = D3D11_FLOAT32_MAX;
-
-
 	device->CreateSamplerState(&sampleDesc, &sampler1);
-	//device->CreateSamplerState(&sampleDesc2, &sampler1);
 
-	material1 = new Material(pixelShader, vertexShader, flamesSRV, sampler1);
-	//material2 = new Material(pixelShader, vertexShader, carpetSRV, sampler1);
+	material1 = new Material(pixelShader, vertexShader, sphereSRV, sampler1);
 	
 }
 
@@ -153,7 +140,6 @@ void Game::CreateBasicGeometry()
 
 	GameEntity* sphere = new GameEntity(sphereMesh, material1);
 	entities.push_back(sphere);
-
 
 }
 
@@ -192,7 +178,6 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 	
-
 }
 
 // --------------------------------------------------------
@@ -235,7 +220,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	pixelShader->SetData("light1", &dirLight1, sizeof(DirectionalLight));
 	pixelShader->SetData("light2", &dirLight2, sizeof(DirectionalLight));
 
-	pixelShader->SetShaderResourceView("textureSRV", flamesSRV);
+	pixelShader->SetShaderResourceView("textureSRV", sphereSRV);
 	pixelShader->SetSamplerState("basicSampler", sampler1);
 
 	pixelShader->CopyAllBufferData();
@@ -243,8 +228,6 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	// Finally do the actual drawing
 	context->DrawIndexed(entities[0]->GetMesh()->GetIndexCount(), 0, 0);
-
-	
 
 	swapChain->Present(0, 0);
 	

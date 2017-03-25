@@ -16,7 +16,7 @@ GameEntity::GameEntity(Mesh *entityMesh, Material *entityMaterial) {
 
 
 GameEntity::~GameEntity() {
-	//delete entityMesh;
+	
 }
 
 void GameEntity::UpdateWorldMatrix() {

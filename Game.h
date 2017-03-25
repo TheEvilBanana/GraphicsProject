@@ -37,11 +37,6 @@ private:
 	void CreateMatrices();
 	void CreateBasicGeometry();
 
-
-	std::vector<Mesh*> meshes;
-	std::vector<GameEntity*> entities;
-	Camera* camera;
-
 	// Buffers to hold actual geometry data
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* indexBuffer;
@@ -50,10 +45,8 @@ private:
 	SimpleVertexShader* vertexShader;
 	SimplePixelShader* pixelShader;
 
-	ID3D11ShaderResourceView* flamesSRV;
-	ID3D11ShaderResourceView* carpetSRV;
+	ID3D11ShaderResourceView* sphereSRV;
 	ID3D11SamplerState* sampler1;
-	ID3D11SamplerState* sampler2;
 
 	// The matrices to go from model space to screen space
 	DirectX::XMFLOAT4X4 worldMatrix;
@@ -66,15 +59,11 @@ private:
 	POINT currentMousePos;
 	POINT difference;
 
-	
-	Mesh *entityMesh1;
-	Mesh *entityMesh2;
+	std::vector<Mesh*> meshes;
+	std::vector<GameEntity*> entities;
+	Camera* camera;
 
 	Material *material1;
-	Material *material2;
-	
-	GameEntity *entity1;
-	GameEntity *entity2;
 	
 	DirectionalLight dirLight1;
 	DirectionalLight dirLight2;
