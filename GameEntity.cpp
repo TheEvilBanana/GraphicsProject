@@ -12,6 +12,7 @@ GameEntity::GameEntity(Mesh *entityMesh, Material *entityMaterial) {
 	position = XMFLOAT3(0, 0, 0);
 	rotation = XMFLOAT3(0, 0, 0);
 	scale = XMFLOAT3(1, 1, 1);
+
 }
 
 
@@ -29,6 +30,7 @@ void GameEntity::UpdateWorldMatrix() {
 	XMMATRIX total = sc * rotZ * rotY * rotX * trans;
 	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(total));
 }
+
 
 //void GameEntity::PrepareMaterial(XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix) {
 //	//XMStoreFloat4x4(&viewMatrix, _viewMatrix);
