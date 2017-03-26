@@ -181,15 +181,16 @@ void Game::OnResize()
 void Game::Update(float deltaTime, float totalTime)
 {
 	float sinTime = (sin(totalTime * 2) + 2.0f) / 10.0f;
+	float xposition = rand() % 3;
 	
 	//Reset platforms
 	if (platformEntity[0]->GetPosition().z < -6)
 	{
-		platformEntity[0]->SetPosition(0, -2, 0);
+		platformEntity[0]->SetPosition(xposition, -2, 0);
 	}
 	if (platformEntity[1]->GetPosition().z < -6)
 	{
-		platformEntity[1]->SetPosition(0, -2, 0);
+		platformEntity[1]->SetPosition(xposition, -2, 0);
 	}
 
 	//Move platforms
