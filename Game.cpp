@@ -196,6 +196,16 @@ void Game::Update(float deltaTime, float totalTime)
 	platformEntity[0]->Move(0, 0, -deltaTime);
 	platformEntity[1]->Move(0, 0, -deltaTime);
 
+	//Move Player
+	if (GetAsyncKeyState('Z') & 0x8000)
+	{
+		sphereEntity->Move(-0.005, 0, 0);
+	}
+	if (GetAsyncKeyState('C') & 0x8000)
+	{
+		sphereEntity->Move(0.005, 0, 0);
+	}
+
 	// Update the camera
 	camera->Update(deltaTime);
 
