@@ -40,6 +40,7 @@ private:
 	// Buffers to hold actual geometry data
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* indexBuffer;
+	
 
 	// Wrappers for DirectX shaders to provide simplified functionality
 	SimpleVertexShader* vertexShader;
@@ -59,8 +60,9 @@ private:
 	POINT currentMousePos;
 	POINT difference;
 
-	std::vector<Mesh*> platformMesh;   // Mesh vector for platforms
+	//std::vector<Mesh*> platformMesh;   // Mesh vector for platforms
 	Mesh* sphereMesh;                  // Mesh for ball
+	Mesh* platformMesh;				   // Mesh for platform
 	std::vector<GameEntity*> platformEntity;  // Entity vector for platforms
 	GameEntity* sphereEntity;                 // Entity for ball
 	Camera* camera;

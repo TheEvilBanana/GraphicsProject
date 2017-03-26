@@ -53,11 +53,12 @@ Game::~Game()
 	delete material1;
 	//delete material2;
 
-	//for (auto& e : platformEntity) delete e;
+	for (auto& e : platformEntity) delete e;
 	//for (auto& m : platformMesh) delete m;
 	delete sphereEntity;
 	delete sphereMesh;
 	delete camera;
+	delete platformMesh;
 
 	sphereSRV->Release();
 	sampler1->Release();
@@ -140,6 +141,16 @@ void Game::CreateBasicGeometry()
 	sphereMesh = new Mesh("Debug/Models/sphere.obj", device);
 	//meshes.push_back(sphereMesh);
 
+	platformMesh = new Mesh("Debug/Models/cube.obj", device);
+
+	GameEntity* p1 = new GameEntity(platformMesh, material1);
+	GameEntity* p2 = new GameEntity(platformMesh, material1);
+	platformEntity.push_back(p1);
+	platformEntity.push_back(p2);
+
+	platformEntity[0]->SetPosition(0, -2, 0);
+	platformEntity[1]->SetPosition(0, -2, 3);
+
 	sphereEntity = new GameEntity(sphereMesh, material1);
 	//entities.push_back(sphere);
 
@@ -171,9 +182,25 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	float sinTime = (sin(totalTime * 2) + 2.0f) / 10.0f;
 	
+	//Reset platforms
+	if (platformEntity[0]->GetPosition().z < -6)
+	{
+		platformEntity[0]->SetPosition(0, -2, 0);
+	}
+	if (platformEntity[1]->GetPosition().z < -6)
+	{
+		platformEntity[1]->SetPosition(0, -2, 0);
+	}
+
+	//Move platforms
+	platformEntity[0]->Move(0, 0, -deltaTime);
+	platformEntity[1]->Move(0, 0, -deltaTime);
+
 	// Update the camera
 	camera->Update(deltaTime);
 
+	platformEntity[0]->UpdateWorldMatrix();
+	platformEntity[1]->UpdateWorldMatrix();
 	sphereEntity->UpdateWorldMatrix();
 
 	// Quit if the escape key is pressed
@@ -202,6 +229,11 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 	vertexBuffer = sphereEntity->GetMesh()->GetVertexBuffer();
 	indexBuffer = sphereEntity->GetMesh()->GetIndexBuffer();
+	
+	ID3D11Buffer* vertexBufferPlatform1 = platformEntity[0]->GetMesh()->GetVertexBuffer();
+	ID3D11Buffer* indexBufferPlatform1 = platformEntity[0]->GetMesh()->GetIndexBuffer();
+	ID3D11Buffer* vertexBufferPlatform2 = platformEntity[1]->GetMesh()->GetVertexBuffer();
+	ID3D11Buffer* indexBufferPlatform2 = platformEntity[1]->GetMesh()->GetIndexBuffer();
 
 	// Set buffers in the input assembler
 	//  - Do this ONCE PER OBJECT you're drawing, since each object might
@@ -230,6 +262,40 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	// Finally do the actual drawing
 	context->DrawIndexed(sphereEntity->GetMesh()->GetIndexCount(), 0, 0);
+
+	/**********************************************************************************************/
+	
+	context->IASetVertexBuffers(0, 1, &vertexBufferPlatform1, &stride, &offset);
+	context->IASetIndexBuffer(indexBufferPlatform1, DXGI_FORMAT_R32_UINT, 0);
+
+	vertexShader->SetMatrix4x4("world", *platformEntity[0]->GetWorldMatrix());
+
+	vertexShader->CopyAllBufferData();
+	vertexShader->SetShader();
+
+	pixelShader->SetShaderResourceView("textureSRV", sphereSRV);
+	pixelShader->SetSamplerState("basicSampler", sampler1);
+
+	pixelShader->CopyAllBufferData();
+	pixelShader->SetShader();
+
+	context->DrawIndexed(platformEntity[0]->GetMesh()->GetIndexCount(), 0, 0);
+
+	context->IASetVertexBuffers(0, 1, &vertexBufferPlatform2, &stride, &offset);
+	context->IASetIndexBuffer(indexBufferPlatform2, DXGI_FORMAT_R32_UINT, 0);
+
+	vertexShader->SetMatrix4x4("world", *platformEntity[1]->GetWorldMatrix());
+
+	vertexShader->CopyAllBufferData();
+	vertexShader->SetShader();
+
+	pixelShader->SetShaderResourceView("textureSRV", sphereSRV);
+	pixelShader->SetSamplerState("basicSampler", sampler1);
+
+	pixelShader->CopyAllBufferData();
+	pixelShader->SetShader();
+
+	context->DrawIndexed(platformEntity[1]->GetMesh()->GetIndexCount(), 0, 0);
 
 	swapChain->Present(0, 0);
 	
