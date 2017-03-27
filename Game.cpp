@@ -183,8 +183,6 @@ void Game::Update(float deltaTime, float totalTime)
 	float sinTime = (sin(totalTime * 2) + 2.0f) / 10.0f;
 	float xposition = rand() % 3;
 	
-	speed -= gravity * deltaTime;
-
 	//Reset platforms
 	if (platformEntity[0]->GetPosition().z < -6)
 	{
@@ -209,12 +207,6 @@ void Game::Update(float deltaTime, float totalTime)
 		sphereEntity->Move(0.005, 0, 0);
 	}
 
-	if (sphereEntity->GetPosition().y < - 2)
-	{
-		speed = 10.0f;
-	}
-
-	sphereEntity->Move(0, speed * 0.0005, 0);
 	// Update the camera
 	camera->Update(deltaTime);
 

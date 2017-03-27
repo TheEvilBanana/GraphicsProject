@@ -71,8 +71,5 @@ private:
 	
 	DirectionalLight dirLight1;
 	DirectionalLight dirLight2;
-
-	float gravity = 10;
-	float speed = 10;
 };
 
