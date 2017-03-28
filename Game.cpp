@@ -207,6 +207,15 @@ void Game::Update(float deltaTime, float totalTime)
 		sphereEntity->Move(0.005, 0, 0);
 	}
 
+	if (sphereEntity->GetPosition().y < -2)
+	{
+		speed = 5.0f;
+	}
+
+	speed = speed - (gravity * deltaTime);
+
+	sphereEntity->Move(0, speed*deltaTime, 0);
+
 	// Update the camera
 	camera->Update(deltaTime);
 
