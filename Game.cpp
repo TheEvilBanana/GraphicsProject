@@ -194,8 +194,8 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 
 	//Move platforms
-	platformEntity[0]->Move(0, 0, -deltaTime);
-	platformEntity[1]->Move(0, 0, -deltaTime);
+	//platformEntity[0]->Move(0, 0, -deltaTime);
+	//platformEntity[1]->Move(0, 0, -deltaTime);
 
 	//Move Player
 	if (GetAsyncKeyState('Z') & 0x8000)
@@ -207,9 +207,14 @@ void Game::Update(float deltaTime, float totalTime)
 		sphereEntity->Move(0.005, 0, 0);
 	}
 
-	if (sphereEntity->GetPosition().y < -2)
+	if (sphereEntity->GetPosition().y < -1)
 	{
-		speed = 5.0f;
+		
+		if (sphereEntity->GetPosition().x < (platformEntity[0]->GetPosition().x + 0.5f) && sphereEntity->GetPosition().x >(platformEntity[0]->GetPosition().x - 0.5f))
+		{
+			speed = 5.0f;
+			printf("Collision!");
+		}
 	}
 
 	speed = speed - (gravity * deltaTime);
