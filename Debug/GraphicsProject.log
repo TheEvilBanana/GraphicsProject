@@ -1,10 +1,12 @@
-﻿  Game.cpp
+﻿  Main.cpp
+  Game.cpp
 d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(7): warning C4005: 'max': macro redefinition
   c:\program files (x86)\windows kits\8.1\include\shared\minwindef.h(193): note: see previous definition of 'max'
 d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(8): warning C4005: 'min': macro redefinition
   c:\program files (x86)\windows kits\8.1\include\shared\minwindef.h(197): note: see previous definition of 'min'
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(184): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(203): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(207): warning C4305: 'argument': truncation from 'double' to 'float'
+d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(185): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(204): warning C4305: 'argument': truncation from 'double' to 'float'
+d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(208): warning C4305: 'argument': truncation from 'double' to 'float'
+  Generating Code...
   GraphicsProject.vcxproj -> D:\Game Design and Development\Sem 2\Game Graphics Programming\GraphicsProject\Debug\GraphicsProject.exe
   GraphicsProject.vcxproj -> D:\Game Design and Development\Sem 2\Game Graphics Programming\GraphicsProject\Debug\GraphicsProject.pdb (Full PDB)
