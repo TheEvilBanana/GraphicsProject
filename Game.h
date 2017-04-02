@@ -2,13 +2,13 @@
 
 #include "DXCore.h"
 #include "SimpleShader.h"
-#include <DirectXMath.h>
+#include "Renderer.h"
 #include "Mesh.h"
 #include "GameEntity.h"
 #include "Camera.h"
 #include "Lights.h"
 #include <vector>
-
+#include <DirectXMath.h>
 
 class Game 
 	: public DXCore
@@ -33,7 +33,8 @@ public:
 private:
 
 	// Initialization helper methods - feel free to customize, combine, etc.
-	void LoadShaders(); 
+	void LoadShaders();
+	void CreateMaterials();
 	void CreateMatrices();
 	void CreateBasicGeometry();
 
@@ -65,12 +66,12 @@ private:
 	Mesh* platformMesh;				   // Mesh for platform
 	std::vector<GameEntity*> platformEntity;  // Entity vector for platforms
 	GameEntity* sphereEntity;                 // Entity for ball
+	
+	Renderer* renderer;
+
 	Camera* camera;
 
 	Material *material1;
-	
-	DirectionalLight dirLight1;
-	DirectionalLight dirLight2;
 
 	float gravity = 10.0f;
 	float speed = 10.0f;

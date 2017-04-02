@@ -74,13 +74,10 @@ void Game::Init()
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
+	CreateMaterials();
 	CreateMatrices();
 	CreateBasicGeometry();
 	
-	dirLight1.SetLightValues(XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, -1.0f, 0));
-	dirLight2.SetLightValues(XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(-1.0f, -1.0f, 0));
-
-	//CreateWICTextureFromFile(device, context, L"Debug/Flames.jpg", 0, &flamesSRV);
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
@@ -103,7 +100,9 @@ void Game::LoadShaders()
 	pixelShader = new SimplePixelShader(device, context);
 	if(!pixelShader->LoadShaderFile(L"Debug/PixelShader.cso"))	
 		pixelShader->LoadShaderFile(L"PixelShader.cso");
-	
+}
+
+void Game::CreateMaterials() {
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Cobble.tif", 0, &sphereSRV);
 
 	D3D11_SAMPLER_DESC sampleDesc = {};
@@ -116,9 +115,7 @@ void Game::LoadShaders()
 	device->CreateSamplerState(&sampleDesc, &sampler1);
 
 	material1 = new Material(pixelShader, vertexShader, sphereSRV, sampler1);
-	
 }
-
 
 
 // --------------------------------------------------------
@@ -254,75 +251,34 @@ void Game::Draw(float deltaTime, float totalTime)
 		1.0f,
 		0);
 	
-	vertexBuffer = sphereEntity->GetMesh()->GetVertexBuffer();
-	indexBuffer = sphereEntity->GetMesh()->GetIndexBuffer();
-	
-	ID3D11Buffer* vertexBufferPlatform1 = platformEntity[0]->GetMesh()->GetVertexBuffer();
-	ID3D11Buffer* indexBufferPlatform1 = platformEntity[0]->GetMesh()->GetIndexBuffer();
-	ID3D11Buffer* vertexBufferPlatform2 = platformEntity[1]->GetMesh()->GetVertexBuffer();
-	ID3D11Buffer* indexBufferPlatform2 = platformEntity[1]->GetMesh()->GetIndexBuffer();
-
-	// Set buffers in the input assembler
-	//  - Do this ONCE PER OBJECT you're drawing, since each object might
-	//    have different geometry.
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
-	
+
+	renderer = new Renderer(sphereEntity, camera);
+	vertexBuffer = renderer->SetVertexBuffer();
+	indexBuffer = renderer->SetIndexBuffer();
+	vertexShader = renderer->SetVertexShader();
+	pixelShader = renderer->SetPixelShader();
+	delete renderer;
+
 	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 	context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-
-	vertexShader->SetMatrix4x4("world", *sphereEntity->GetWorldMatrix());
-	vertexShader->SetMatrix4x4("view", camera->GetView());
-	vertexShader->SetMatrix4x4("projection", camera->GetProjection());
-
-	vertexShader->CopyAllBufferData();
-	vertexShader->SetShader();
-	
-	pixelShader->SetData("light1", &dirLight1, sizeof(DirectionalLight));
-	pixelShader->SetData("light2", &dirLight2, sizeof(DirectionalLight));
-
-	pixelShader->SetShaderResourceView("textureSRV", sphereSRV);
-	pixelShader->SetSamplerState("basicSampler", sampler1);
-
-	pixelShader->CopyAllBufferData();
-	pixelShader->SetShader();
-
-	// Finally do the actual drawing
 	context->DrawIndexed(sphereEntity->GetMesh()->GetIndexCount(), 0, 0);
 
-	/**********************************************************************************************/
-	
-	context->IASetVertexBuffers(0, 1, &vertexBufferPlatform1, &stride, &offset);
-	context->IASetIndexBuffer(indexBufferPlatform1, DXGI_FORMAT_R32_UINT, 0);
+	/*********************************************************************************************/
 
-	vertexShader->SetMatrix4x4("world", *platformEntity[0]->GetWorldMatrix());
+	for (int i = 0; i <= 1; i++) {
+		renderer = new Renderer(platformEntity[i], camera);
+		vertexBuffer = renderer->SetVertexBuffer();
+		indexBuffer = renderer->SetIndexBuffer();
+		vertexShader = renderer->SetVertexShader();
+		pixelShader = renderer->SetPixelShader();
+		delete renderer;
 
-	vertexShader->CopyAllBufferData();
-	vertexShader->SetShader();
-
-	pixelShader->SetShaderResourceView("textureSRV", sphereSRV);
-	pixelShader->SetSamplerState("basicSampler", sampler1);
-
-	pixelShader->CopyAllBufferData();
-	pixelShader->SetShader();
-
-	context->DrawIndexed(platformEntity[0]->GetMesh()->GetIndexCount(), 0, 0);
-
-	context->IASetVertexBuffers(0, 1, &vertexBufferPlatform2, &stride, &offset);
-	context->IASetIndexBuffer(indexBufferPlatform2, DXGI_FORMAT_R32_UINT, 0);
-
-	vertexShader->SetMatrix4x4("world", *platformEntity[1]->GetWorldMatrix());
-
-	vertexShader->CopyAllBufferData();
-	vertexShader->SetShader();
-
-	pixelShader->SetShaderResourceView("textureSRV", sphereSRV);
-	pixelShader->SetSamplerState("basicSampler", sampler1);
-
-	pixelShader->CopyAllBufferData();
-	pixelShader->SetShader();
-
-	context->DrawIndexed(platformEntity[1]->GetMesh()->GetIndexCount(), 0, 0);
+		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		context->DrawIndexed(platformEntity[i]->GetMesh()->GetIndexCount(), 0, 0);
+	}
 
 	swapChain->Present(0, 0);
 	
