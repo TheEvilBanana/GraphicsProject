@@ -66,9 +66,11 @@ private:
 	//std::vector<Mesh*> platformMesh;   // Mesh vector for platforms
 	Mesh* sphereMesh;                  // Mesh for ball
 	Mesh* platformMesh;				   // Mesh for platform
+	Mesh* skyMesh;						//Mesh for Sky
 	std::vector<GameEntity*> platformEntity;  // Entity vector for platforms
 	GameEntity* sphereEntity;                 // Entity for ball
-	
+	GameEntity* skyEntity;
+
 	Renderer* renderer;
 
 	Camera* camera;
@@ -78,5 +80,12 @@ private:
 	float gravity = 10.0f;
 	float speed = 10.0f;
 	int platformCount = 1;
+
+	//SkyBox
+	ID3D11ShaderResourceView* skySRV;
+	SimpleVertexShader* skyVS;
+	SimplePixelShader* skyPS;
+	ID3D11RasterizerState* rsSky;
+	ID3D11DepthStencilState* dsSky;
 };
 
