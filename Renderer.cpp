@@ -26,18 +26,20 @@ ID3D11Buffer * Renderer::SetIndexBuffer() {
 	return indexBufferRender;
 }
 
-SimpleVertexShader * Renderer::SetVertexShader() {
+SimpleVertexShader * Renderer::SetVertexShader(DirectX::XMFLOAT4X4 shadowViewMatrix, DirectX::XMFLOAT4X4 shadowProjectionMatrix) {
 	vertexShaderRender = gameEntity->GetMaterial()->GetVertexShader();
 	vertexShaderRender->SetMatrix4x4("world", *gameEntity->GetWorldMatrix());
 	vertexShaderRender->SetMatrix4x4("view", camera->GetView());
 	vertexShaderRender->SetMatrix4x4("projection", camera->GetProjection());
+	vertexShaderRender->SetMatrix4x4("shadowView", shadowViewMatrix);
+	vertexShaderRender->SetMatrix4x4("shadowProj", shadowProjectionMatrix);
 
 	vertexShaderRender->CopyAllBufferData();
 	vertexShaderRender->SetShader();
 	return vertexShaderRender;
 }
 
-SimplePixelShader * Renderer::SetPixelShader() {
+SimplePixelShader * Renderer::SetPixelShader(ID3D11SamplerState* shadowSampler, ID3D11ShaderResourceView* shadowSRV) {
 	SetLights();
 	pixelShaderRender = gameEntity->GetMaterial()->GetPixelShader();
 	pixelShaderRender->SetData("dirLight1", &dirLight1, sizeof(DirectionalLight));
@@ -46,6 +48,10 @@ SimplePixelShader * Renderer::SetPixelShader() {
 	pixelShaderRender->SetShaderResourceView("textureSRV", gameEntity->GetMaterial()->GetMaterialSRV());
 	pixelShaderRender->SetShaderResourceView("normalMapSRV", gameEntity->GetMaterial()->GetNormalSRV());
 	pixelShaderRender->SetSamplerState("basicSampler", gameEntity->GetMaterial()->GetMaterialSampler());
+	
+	//Shadow things
+	pixelShaderRender->SetSamplerState("ShadowSampler", shadowSampler);
+	pixelShaderRender->SetShaderResourceView("ShadowMap", shadowSRV);
 
 	pixelShaderRender->CopyAllBufferData();
 	pixelShaderRender->SetShader();

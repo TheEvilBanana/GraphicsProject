@@ -38,6 +38,8 @@ private:
 	void CreateMatrices();
 	void CreateBasicGeometry();
 
+	void RenderShadowMap();
+
 	// Buffers to hold actual geometry data
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* indexBuffer;
@@ -56,6 +58,16 @@ private:
 	DirectX::XMFLOAT4X4 worldMatrix;
 	DirectX::XMFLOAT4X4 viewMatrix;
 	DirectX::XMFLOAT4X4 projectionMatrix;
+
+	// Shadow stuff
+	int shadowMapSize;
+	ID3D11DepthStencilView* shadowDSV;
+	ID3D11ShaderResourceView* shadowSRV;
+	ID3D11SamplerState* shadowSampler;
+	ID3D11RasterizerState* shadowRasterizer;
+	SimpleVertexShader* shadowVS;
+	DirectX::XMFLOAT4X4 shadowViewMatrix;
+	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
 
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.

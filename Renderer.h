@@ -12,8 +12,8 @@ public:
 	void SetLights();
 	ID3D11Buffer* SetVertexBuffer();
 	ID3D11Buffer* SetIndexBuffer();
-	SimpleVertexShader* SetVertexShader();
-	SimplePixelShader* SetPixelShader();
+	SimpleVertexShader* SetVertexShader(DirectX::XMFLOAT4X4 shadowViewMatrix, DirectX::XMFLOAT4X4 shadowProjectionMatrix);
+	SimplePixelShader* SetPixelShader(ID3D11SamplerState* shadowSampler, ID3D11ShaderResourceView* shadowSRV);
 
 private:
 	GameEntity* gameEntity;

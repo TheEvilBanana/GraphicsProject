@@ -17,11 +17,15 @@ struct VertexToPixel
 	float2 uv           : TEXCOORD;     // UV co-ordinates
 	float3 tangent		: TANGENT;
 	float3 worldPos		: POSITION;
+	float4 posForShadow	: POSITION1;
 };
 
 Texture2D textureSRV : register(t0);
 Texture2D normalMapSRV : register(t1);
+Texture2D ShadowMap : register(t2);
+
 SamplerState basicSampler : register(s0);
+SamplerComparisonState ShadowSampler : register(s1);
 
 struct DirectionalLight {
 	float4 ambientColor;
@@ -68,7 +72,20 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float4 light1 = ((dirLight1.diffuseColor * lightAmount1 * surfaceColor) + (dirLight1.ambientColor * surfaceColor));
 	float4 light2 = ((dirLight2.diffuseColor * lightAmount2 * surfaceColor) + (dirLight2.ambientColor * surfaceColor));
 	float4 totalLight = light1 + light2;
-	return totalLight;
+
+	//Shadow Mapping
+	float2 shadowUV = input.posForShadow.xy / input.posForShadow.w * 0.5f + 0.5f;
+	shadowUV.y = 1.0f - shadowUV.y;
+
+	float depthFromLight = input.posForShadow.z / input.posForShadow.w;
+
+	float shadowAmount = ShadowMap.SampleCmpLevelZero(
+		ShadowSampler,
+		shadowUV,
+		depthFromLight
+	);
+
+	return totalLight * shadowAmount;
 	// Just return the input color
 	// - This color (like most values passing through the rasterizer) is 
 	//   interpolated for each pixel between the corresponding vertices 

@@ -10,6 +10,9 @@ cbuffer externalData : register(b0)
 	matrix world;
 	matrix view;
 	matrix projection;
+
+	matrix shadowView;
+	matrix shadowProj;
 };
 
 // Struct representing a single vertex worth of data
@@ -49,6 +52,7 @@ struct VertexToPixel
 	float2 uv           : TEXCOORD;     // UV co-ordinates
 	float3 tangent		: TANGENT;
 	float3 worldPos		: POSITION;
+	float4 posForShadow	: POSITION1;
 };
 
 // --------------------------------------------------------
@@ -78,6 +82,10 @@ VertexToPixel main( VertexShaderInput input )
 	// The result is essentially the position (XY) of the vertex on our 2D 
 	// screen and the distance (Z) from the camera (the "depth" of the pixel)
 	output.position = mul(float4(input.position, 1.0f), worldViewProj);
+
+	// Calculate the position of this vertex relative to the shadow-casting light
+	matrix shadowWVP = mul(mul(world, shadowView), shadowProj);
+	output.posForShadow = mul(float4(input.position, 1.0f), shadowWVP);
 
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer

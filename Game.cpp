@@ -64,6 +64,13 @@ Game::~Game()
 	tileSRV->Release();
 	normalTileSRV->Release();
 	sampler1->Release();
+
+	// Clean up shadow map
+	shadowDSV->Release();
+	shadowSRV->Release();
+	shadowRasterizer->Release();
+	shadowSampler->Release();
+	delete shadowVS;
 }
 
 // --------------------------------------------------------
@@ -80,6 +87,66 @@ void Game::Init()
 	CreateMatrices();
 	CreateBasicGeometry();
 	
+	// Create shadow requirements ------------------------------------------
+	shadowMapSize = 2048;
+
+
+	// Create the actual texture that will be the shadow map
+	D3D11_TEXTURE2D_DESC shadowDesc = {};
+	shadowDesc.Width = shadowMapSize;
+	shadowDesc.Height = shadowMapSize;
+	shadowDesc.ArraySize = 1;
+	shadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	shadowDesc.CPUAccessFlags = 0;
+	shadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	shadowDesc.MipLevels = 1;
+	shadowDesc.MiscFlags = 0;
+	shadowDesc.SampleDesc.Count = 1;
+	shadowDesc.SampleDesc.Quality = 0;
+	shadowDesc.Usage = D3D11_USAGE_DEFAULT;
+	ID3D11Texture2D* shadowTexture;
+	device->CreateTexture2D(&shadowDesc, 0, &shadowTexture);
+
+	// Create the depth/stencil
+	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = {};
+	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	shadowDSDesc.Texture2D.MipSlice = 0;
+	device->CreateDepthStencilView(shadowTexture, &shadowDSDesc, &shadowDSV);
+
+	// Create the SRV for the shadow map
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	device->CreateShaderResourceView(shadowTexture, &srvDesc, &shadowSRV);
+
+	// Release the texture reference since we don't need it
+	shadowTexture->Release();
+
+	// Create the special "comparison" sampler state for shadows
+	D3D11_SAMPLER_DESC shadowSampDesc = {};
+	shadowSampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // Could be anisotropic
+	shadowSampDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
+	shadowSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.BorderColor[0] = 1.0f;
+	shadowSampDesc.BorderColor[1] = 1.0f;
+	shadowSampDesc.BorderColor[2] = 1.0f;
+	shadowSampDesc.BorderColor[3] = 1.0f;
+	device->CreateSamplerState(&shadowSampDesc, &shadowSampler);
+
+	// Create a rasterizer state
+	D3D11_RASTERIZER_DESC shadowRastDesc = {};
+	shadowRastDesc.FillMode = D3D11_FILL_SOLID;
+	shadowRastDesc.CullMode = D3D11_CULL_BACK;
+	shadowRastDesc.DepthClipEnable = true;
+	shadowRastDesc.DepthBias = 1000; // Multiplied by (smallest possible value > 0 in depth buffer)
+	shadowRastDesc.DepthBiasClamp = 0.0f;
+	shadowRastDesc.SlopeScaledDepthBias = 1.0f;
+	device->CreateRasterizerState(&shadowRastDesc, &shadowRasterizer);
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
@@ -102,6 +169,10 @@ void Game::LoadShaders()
 	pixelShader = new SimplePixelShader(device, context);
 	if(!pixelShader->LoadShaderFile(L"Debug/PixelShader.cso"))	
 		pixelShader->LoadShaderFile(L"PixelShader.cso");
+
+	shadowVS = new SimpleVertexShader(device, context);
+	if (!shadowVS->LoadShaderFile(L"Debug/ShadowVS.cso"))
+		shadowVS->LoadShaderFile(L"ShadowVS.cso");
 }
 
 void Game::CreateMaterials() {
@@ -131,6 +202,20 @@ void Game::CreateMatrices()
 	camera = new Camera(0, 0, -5);
 	camera->UpdateProjectionMatrix((float) width / height);
 
+	// Shadow view matrix (where the light is looking from)
+	XMMATRIX shView = XMMatrixLookAtLH(
+		XMVectorSet(0, 20, -20, 0), // Eye position
+		XMVectorSet(0, 0, 0, 0),		// Look at pos
+		XMVectorSet(0, 1, 0, 0));		// Up
+	XMStoreFloat4x4(&shadowViewMatrix, XMMatrixTranspose(shView));
+
+	// Shadow proj matrix
+	XMMATRIX shProj = XMMatrixOrthographicLH(
+		10.0f,		// Ortho width
+		10.0f,		// Ortho height
+		0.1f,		// Near plane
+		100.0f);	// Far plane
+	XMStoreFloat4x4(&shadowProjectionMatrix, XMMatrixTranspose(shProj));
 }
 
 
@@ -158,7 +243,61 @@ void Game::CreateBasicGeometry()
 
 }
 
+void Game::RenderShadowMap()
+{
+	// Initial setup: No RTV (remember to clear shadow map)
+	context->OMSetRenderTargets(0, 0, shadowDSV);
+	context->ClearDepthStencilView(shadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	context->RSSetState(shadowRasterizer);
 
+	// Set up an appropriate shadow view port
+	D3D11_VIEWPORT shadowVP = {};
+	shadowVP.TopLeftX = 0;
+	shadowVP.TopLeftY = 0;
+	shadowVP.Width = (float)shadowMapSize;
+	shadowVP.Height = (float)shadowMapSize;
+	shadowVP.MinDepth = 0.0f;
+	shadowVP.MaxDepth = 1.0f;
+	context->RSSetViewports(1, &shadowVP);
+
+	// Set up shaders for making the shadow map
+	shadowVS->SetShader();
+	shadowVS->SetMatrix4x4("view", shadowViewMatrix);
+	shadowVS->SetMatrix4x4("projection", shadowProjectionMatrix);
+
+	// Turn off pixel shader
+	context->PSSetShader(0, 0, 0);
+
+	// Actually draw the entities
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+	//for (unsigned int i = 0; i < entities.size(); i++)
+	{
+
+		// Grab the data from the first entity's mesh
+		GameEntity* ge = sphereEntity;
+		ID3D11Buffer* vb = ge->GetMesh()->GetVertexBuffer();
+		ID3D11Buffer* ib = ge->GetMesh()->GetIndexBuffer();
+
+		// Set buffers in the input assembler
+		context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+		context->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
+
+		shadowVS->SetMatrix4x4("world", *ge->GetWorldMatrix());
+		shadowVS->CopyAllBufferData();
+
+		// Finally do the actual drawing
+		context->DrawIndexed(ge->GetMesh()->GetIndexCount(), 0, 0);
+	}
+
+	// Revert to original targets and states
+	context->OMSetRenderTargets(1, &this->backBufferRTV, this->depthStencilView);
+	shadowVP.Width = (float)this->width;
+	shadowVP.Height = (float)this->height;
+	context->RSSetViewports(1, &shadowVP);
+	context->RSSetState(0);
+}
 
 
 // --------------------------------------------------------
@@ -242,6 +381,8 @@ void Game::Update(float deltaTime, float totalTime)
 // --------------------------------------------------------
 void Game::Draw(float deltaTime, float totalTime)
 {
+	RenderShadowMap();
+
 	// Background color (Cornflower Blue in this case) for clearing
 	const float color[4] = {0.4f, 0.6f, 0.75f, 0.0f};
 
@@ -261,8 +402,8 @@ void Game::Draw(float deltaTime, float totalTime)
 	renderer = new Renderer(sphereEntity, camera);
 	vertexBuffer = renderer->SetVertexBuffer();
 	indexBuffer = renderer->SetIndexBuffer();
-	vertexShader = renderer->SetVertexShader();
-	pixelShader = renderer->SetPixelShader();
+	vertexShader = renderer->SetVertexShader(shadowViewMatrix, shadowProjectionMatrix);
+	pixelShader = renderer->SetPixelShader(shadowSampler, shadowSRV);
 	delete renderer;
 
 	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
@@ -275,14 +416,16 @@ void Game::Draw(float deltaTime, float totalTime)
 		renderer = new Renderer(platformEntity[i], camera);
 		vertexBuffer = renderer->SetVertexBuffer();
 		indexBuffer = renderer->SetIndexBuffer();
-		vertexShader = renderer->SetVertexShader();
-		pixelShader = renderer->SetPixelShader();
+		vertexShader = renderer->SetVertexShader(shadowViewMatrix, shadowProjectionMatrix);
+		pixelShader = renderer->SetPixelShader(shadowSampler, shadowSRV);
 		delete renderer;
 
 		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		context->DrawIndexed(platformEntity[i]->GetMesh()->GetIndexCount(), 0, 0);
 	}
+
+	pixelShader->SetShaderResourceView("ShadowMap", 0);
 
 	swapChain->Present(0, 0);
 	
