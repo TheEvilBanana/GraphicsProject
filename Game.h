@@ -48,6 +48,8 @@ private:
 	SimplePixelShader* pixelShader;
 
 	ID3D11ShaderResourceView* sphereSRV;
+	ID3D11ShaderResourceView* tileSRV;
+	ID3D11ShaderResourceView* normalTileSRV;
 	ID3D11SamplerState* sampler1;
 
 	// The matrices to go from model space to screen space

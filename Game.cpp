@@ -61,6 +61,8 @@ Game::~Game()
 	delete platformMesh;
 
 	sphereSRV->Release();
+	tileSRV->Release();
+	normalTileSRV->Release();
 	sampler1->Release();
 }
 
@@ -104,6 +106,8 @@ void Game::LoadShaders()
 
 void Game::CreateMaterials() {
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Cobble.tif", 0, &sphereSRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Testing_basecolor.png", 0, &tileSRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Testing_normal.png", 0, &normalTileSRV);
 
 	D3D11_SAMPLER_DESC sampleDesc = {};
 	sampleDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -114,7 +118,7 @@ void Game::CreateMaterials() {
 
 	device->CreateSamplerState(&sampleDesc, &sampler1);
 
-	material1 = new Material(pixelShader, vertexShader, sphereSRV, sampler1);
+	material1 = new Material(pixelShader, vertexShader, tileSRV, normalTileSRV, sampler1);
 }
 
 
@@ -211,7 +215,7 @@ void Game::Update(float deltaTime, float totalTime)
 		if (sphereEntity->GetPosition().x < (platformEntity[platformCount % 2]->GetPosition().x + 0.5f) && sphereEntity->GetPosition().x >(platformEntity[platformCount % 2]->GetPosition().x - 0.5f))
 		{
 			speed = 10.0f;
-			printf("Collision!");
+			//printf("Collision!");
 			platformCount++;
 		}
 	}

@@ -40,11 +40,11 @@ SimpleVertexShader * Renderer::SetVertexShader() {
 SimplePixelShader * Renderer::SetPixelShader() {
 	SetLights();
 	pixelShaderRender = gameEntity->GetMaterial()->GetPixelShader();
-	pixelShaderRender->SetData("light1", &dirLight1, sizeof(DirectionalLight));
-	pixelShaderRender->SetData("light2", &dirLight2, sizeof(DirectionalLight));
+	pixelShaderRender->SetData("dirLight1", &dirLight1, sizeof(DirectionalLight));
+	pixelShaderRender->SetData("dirLight2", &dirLight2, sizeof(DirectionalLight));
 
 	pixelShaderRender->SetShaderResourceView("textureSRV", gameEntity->GetMaterial()->GetMaterialSRV());
-	//pixelShaderRender->SetShaderResourceView("normalMapSRV", gameEntity->GetMaterial()->GetNormalSRV());
+	pixelShaderRender->SetShaderResourceView("normalMapSRV", gameEntity->GetMaterial()->GetNormalSRV());
 	pixelShaderRender->SetSamplerState("basicSampler", gameEntity->GetMaterial()->GetMaterialSampler());
 
 	pixelShaderRender->CopyAllBufferData();

@@ -15,9 +15,12 @@ struct VertexToPixel
 	//float4 color		: COLOR;        // RGBA color
 	float3 normal       : NORMAL;       // Normal co-ordinates
 	float2 uv           : TEXCOORD;     // UV co-ordinates
+	float3 tangent		: TANGENT;
+	float3 worldPos		: POSITION;
 };
 
 Texture2D textureSRV : register(t0);
+Texture2D normalMapSRV : register(t1);
 SamplerState basicSampler : register(s0);
 
 struct DirectionalLight {
@@ -27,8 +30,8 @@ struct DirectionalLight {
 
 };
 cbuffer ExternalData : register(b0) {
-	DirectionalLight light1;
-	DirectionalLight light2;
+	DirectionalLight dirLight1;
+	DirectionalLight dirLight2;
 };
 
 // --------------------------------------------------------
@@ -42,17 +45,29 @@ cbuffer ExternalData : register(b0) {
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	float4 surfaceColor = textureSRV.Sample(basicSampler, input.uv);
 
 	input.normal = normalize(input.normal);
+    input.tangent = normalize(input.tangent);
+
+	float3 normalFromMap = normalMapSRV.Sample(basicSampler, input.uv).xyz * 2 - 1;
+
+	// Transform from tangent to world space
+	float3 N = input.normal;
+	float3 T = normalize(input.tangent - N * dot(input.tangent, N));
+	float3 B = cross(T, N);
+
+	float3x3 TBN = float3x3(T, B, N);
+	input.normal = normalize(mul(normalFromMap, TBN));
 	
-	float3 dirToLight1 = normalize(-light1.direction);
-	float lightAmount1 = saturate(dot(input.normal, dirToLight1));
+	float lightAmount1 = saturate(dot(input.normal, -normalize(dirLight1.direction)));
 
-	float3 dirToLight2 = normalize(-light2.direction);
-	float lightAmount2 = saturate(dot(input.normal, dirToLight2));
+	float lightAmount2 = saturate(dot(input.normal, -normalize(dirLight2.direction)));
 
-	float4 totalLight = ((light1.diffuseColor * lightAmount1 * surfaceColor) + light1.ambientColor * surfaceColor) + ((light2.diffuseColor * lightAmount2 * surfaceColor) + light2.ambientColor * surfaceColor);;
+	float4 surfaceColor = textureSRV.Sample(basicSampler, input.uv);
+
+	float4 light1 = ((dirLight1.diffuseColor * lightAmount1 * surfaceColor) + (dirLight1.ambientColor * surfaceColor));
+	float4 light2 = ((dirLight2.diffuseColor * lightAmount2 * surfaceColor) + (dirLight2.ambientColor * surfaceColor));
+	float4 totalLight = light1 + light2;
 	return totalLight;
 	// Just return the input color
 	// - This color (like most values passing through the rasterizer) is 
