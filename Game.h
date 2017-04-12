@@ -87,7 +87,7 @@ private:
 
 	Material *material1;
 
-	float gravity = 10.0f;
+	float gravity = 20.0f;
 	float speed = 10.0f;
 	int platformCount = 1;
 };

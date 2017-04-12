@@ -237,8 +237,12 @@ void Game::CreateBasicGeometry()
 	platformEntity[0]->SetPosition(0, -2, 0);
 	platformEntity[1]->SetPosition(0, -2, 2);
 
+	platformEntity[0]->SetScale(1, 0.3, 1);
+	platformEntity[1]->SetScale(1, 0.3, 1);
+
 	sphereEntity = new GameEntity(sphereMesh, material1);
-	sphereEntity->SetPosition(0, -1, 0);
+	sphereEntity->SetPosition(0, -1.6f, 0);
+	sphereEntity->SetScale(0.5f, 0.5f, 0.5f);
 	//entities.push_back(sphere);
 
 }
@@ -335,8 +339,8 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 
 	//Move platforms
-	platformEntity[0]->Move(0, 0, -deltaTime);
-	platformEntity[1]->Move(0, 0, -deltaTime);
+	platformEntity[0]->Move(0, 0, -deltaTime * 2);
+	platformEntity[1]->Move(0, 0, -deltaTime * 2);
 
 	//Move Player
 	if (GetAsyncKeyState('Z') & 0x8000)
@@ -348,10 +352,10 @@ void Game::Update(float deltaTime, float totalTime)
 		sphereEntity->Move(0.005, 0, 0);
 	}
 
-	if (sphereEntity->GetPosition().y < -1)
+	if (sphereEntity->GetPosition().y < -1.6f)
 	{
 		
-		if (sphereEntity->GetPosition().x < (platformEntity[platformCount % 2]->GetPosition().x + 0.5f) && sphereEntity->GetPosition().x >(platformEntity[platformCount % 2]->GetPosition().x - 0.5f))
+		if ((sphereEntity->GetPosition().x - .35f) < (platformEntity[platformCount % 2]->GetPosition().x + 0.5f) && (sphereEntity->GetPosition().x + .35f) >(platformEntity[platformCount % 2]->GetPosition().x - 0.5f))
 		{
 			speed = 10.0f;
 			//printf("Collision!");
