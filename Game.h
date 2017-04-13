@@ -81,7 +81,7 @@ private:
 	std::vector<GameEntity*> platformEntity;  // Entity vector for platforms
 	GameEntity* sphereEntity;                 // Entity for ball
 	
-	Renderer* renderer;
+	Renderer renderer;
 
 	Camera* camera;
 
