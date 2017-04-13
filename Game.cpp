@@ -231,14 +231,26 @@ void Game::CreateBasicGeometry()
 
 	GameEntity* p1 = new GameEntity(platformMesh, material1);
 	GameEntity* p2 = new GameEntity(platformMesh, material1);
+	GameEntity* p3 = new GameEntity(platformMesh, material1);
+	GameEntity* p4 = new GameEntity(platformMesh, material1);
+	GameEntity* p5 = new GameEntity(platformMesh, material1);
 	platformEntity.push_back(p1);
 	platformEntity.push_back(p2);
+	platformEntity.push_back(p3);
+	platformEntity.push_back(p4);
+	platformEntity.push_back(p5);
 
 	platformEntity[0]->SetPosition(0, -2, 0);
 	platformEntity[1]->SetPosition(0, -2, 2);
+	platformEntity[2]->SetPosition(0, -2, 4);
+	platformEntity[3]->SetPosition(0, -2, 6);
+	platformEntity[4]->SetPosition(0, -2, 8);
 
 	platformEntity[0]->SetScale(1, 0.3, 1);
 	platformEntity[1]->SetScale(1, 0.3, 1);
+	platformEntity[2]->SetScale(1, 0.3, 1);
+	platformEntity[3]->SetScale(1, 0.3, 1);
+	platformEntity[4]->SetScale(1, 0.3, 1);
 
 	sphereEntity = new GameEntity(sphereMesh, material1);
 	sphereEntity->SetPosition(0, -1.6f, 0);
@@ -331,16 +343,32 @@ void Game::Update(float deltaTime, float totalTime)
 	//Reset platforms
 	if (platformEntity[0]->GetPosition().z < -2)
 	{
-		platformEntity[0]->SetPosition(xposition, -2, 2);
+		platformEntity[0]->SetPosition(xposition, -2, 8);
 	}
 	if (platformEntity[1]->GetPosition().z < -2)
 	{
-		platformEntity[1]->SetPosition(xposition, -2, 2);
+		platformEntity[1]->SetPosition(xposition, -2, 8);
+	}
+	if (platformEntity[2]->GetPosition().z < -2)
+	{
+		platformEntity[2]->SetPosition(xposition, -2, 8);
+	}
+	if (platformEntity[3]->GetPosition().z < -2)
+	{
+		platformEntity[3]->SetPosition(xposition, -2, 8);
+	}
+	if (platformEntity[4]->GetPosition().z < -2)
+	{
+		platformEntity[4]->SetPosition(xposition, -2, 8);
 	}
 
 	//Move platforms
 	platformEntity[0]->Move(0, 0, -deltaTime * 2);
 	platformEntity[1]->Move(0, 0, -deltaTime * 2);
+	platformEntity[2]->Move(0, 0, -deltaTime * 2);
+	platformEntity[3]->Move(0, 0, -deltaTime * 2);
+	platformEntity[4]->Move(0, 0, -deltaTime * 2);
+
 
 	//Move Player
 	if (GetAsyncKeyState('Z') & 0x8000)
@@ -355,7 +383,7 @@ void Game::Update(float deltaTime, float totalTime)
 	if (sphereEntity->GetPosition().y < -1.6f)
 	{
 		
-		if ((sphereEntity->GetPosition().x - .35f) < (platformEntity[platformCount % 2]->GetPosition().x + 0.5f) && (sphereEntity->GetPosition().x + .35f) >(platformEntity[platformCount % 2]->GetPosition().x - 0.5f))
+		if ((sphereEntity->GetPosition().x - .35f) < (platformEntity[platformCount % 5]->GetPosition().x + 0.5f) && (sphereEntity->GetPosition().x + .35f) >(platformEntity[platformCount % 5]->GetPosition().x - 0.5f))
 		{
 			speed = 10.0f;
 			//printf("Collision!");
@@ -372,6 +400,9 @@ void Game::Update(float deltaTime, float totalTime)
 
 	platformEntity[0]->UpdateWorldMatrix();
 	platformEntity[1]->UpdateWorldMatrix();
+	platformEntity[2]->UpdateWorldMatrix();
+	platformEntity[3]->UpdateWorldMatrix();
+	platformEntity[4]->UpdateWorldMatrix();
 	sphereEntity->UpdateWorldMatrix();
 
 	// Quit if the escape key is pressed
@@ -416,7 +447,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	/*********************************************************************************************/
 
-	for (int i = 0; i <= 1; i++) {
+	for (int i = 0; i <= 4; i++) {
 		renderer = new Renderer(platformEntity[i], camera);
 		vertexBuffer = renderer->SetVertexBuffer();
 		indexBuffer = renderer->SetIndexBuffer();
