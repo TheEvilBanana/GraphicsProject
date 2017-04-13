@@ -6,15 +6,19 @@
 
 class Renderer {
 public:
-	Renderer(GameEntity* renderEntity, Camera* renderCamera);
+	Renderer();
 	~Renderer();
 
 	void SetLights();
-	ID3D11Buffer* SetVertexBuffer();
+	/*ID3D11Buffer* SetVertexBuffer();
 	ID3D11Buffer* SetIndexBuffer();
 	SimpleVertexShader* SetVertexShader(DirectX::XMFLOAT4X4 shadowViewMatrix, DirectX::XMFLOAT4X4 shadowProjectionMatrix);
-	SimplePixelShader* SetPixelShader(ID3D11SamplerState* shadowSampler, ID3D11ShaderResourceView* shadowSRV);
+	SimplePixelShader* SetPixelShader(ID3D11SamplerState* shadowSampler, ID3D11ShaderResourceView* shadowSRV);*/
 
+	void SetVertexBuffer(GameEntity* &gameEntity, ID3D11Buffer* &vertexBuffer);
+	void SetIndexBuffer(GameEntity* &gameEntity, ID3D11Buffer* &indexBuffer);
+	void SetVertexShader(SimpleVertexShader* &vertexShader, GameEntity* &gameEntity, Camera* &camera, XMFLOAT4X4 &shadowViewMatrix, XMFLOAT4X4 &shadowProjectionMatrix);
+	void SetPixelShader(SimplePixelShader* &pixelShader, GameEntity* &gameEntity, Camera* &camera, ID3D11SamplerState* &shadowSampler, ID3D11ShaderResourceView* &shadowSRV);
 private:
 	GameEntity* gameEntity;
 	Camera* camera;

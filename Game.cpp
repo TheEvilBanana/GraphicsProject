@@ -403,12 +403,17 @@ void Game::Draw(float deltaTime, float totalTime)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	renderer = new Renderer(sphereEntity, camera);
+	/*renderer = new Renderer(sphereEntity, camera);
 	vertexBuffer = renderer->SetVertexBuffer();
 	indexBuffer = renderer->SetIndexBuffer();
 	vertexShader = renderer->SetVertexShader(shadowViewMatrix, shadowProjectionMatrix);
 	pixelShader = renderer->SetPixelShader(shadowSampler, shadowSRV);
-	delete renderer;
+	delete renderer;*/
+
+	renderer.SetVertexBuffer(sphereEntity, vertexBuffer);
+	renderer.SetIndexBuffer(sphereEntity, indexBuffer);
+	renderer.SetVertexShader(vertexShader, sphereEntity, camera, shadowViewMatrix, shadowProjectionMatrix);
+	renderer.SetPixelShader(pixelShader, sphereEntity, camera, shadowSampler, shadowSRV);
 
 	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 	context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
@@ -417,12 +422,16 @@ void Game::Draw(float deltaTime, float totalTime)
 	/*********************************************************************************************/
 
 	for (int i = 0; i <= 1; i++) {
-		renderer = new Renderer(platformEntity[i], camera);
+		/*renderer = new Renderer(platformEntity[i], camera);
 		vertexBuffer = renderer->SetVertexBuffer();
 		indexBuffer = renderer->SetIndexBuffer();
 		vertexShader = renderer->SetVertexShader(shadowViewMatrix, shadowProjectionMatrix);
 		pixelShader = renderer->SetPixelShader(shadowSampler, shadowSRV);
-		delete renderer;
+		delete renderer;*/
+		renderer.SetVertexBuffer(platformEntity[i], vertexBuffer);
+		renderer.SetIndexBuffer(platformEntity[i], indexBuffer);
+		renderer.SetVertexShader(vertexShader, platformEntity[i], camera, shadowViewMatrix, shadowProjectionMatrix);
+		renderer.SetPixelShader(pixelShader, platformEntity[i], camera, shadowSampler, shadowSRV);
 
 		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
