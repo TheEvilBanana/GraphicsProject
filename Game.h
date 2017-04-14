@@ -52,7 +52,18 @@ private:
 	ID3D11ShaderResourceView* sphereSRV;
 	ID3D11ShaderResourceView* tileSRV;
 	ID3D11ShaderResourceView* normalTileSRV;
+	
 	ID3D11SamplerState* sampler1;
+
+	//Sky
+	ID3D11ShaderResourceView* skySRV;
+	SimpleVertexShader* skyVertexShader;
+	SimplePixelShader* skyPixelShader;
+	ID3D11RasterizerState* rasterStateSky;
+	ID3D11DepthStencilState* depthStateSky;
+
+	Mesh* skyCubeMesh;
+	GameEntity* skyCubeEntity;
 
 	// The matrices to go from model space to screen space
 	DirectX::XMFLOAT4X4 worldMatrix;

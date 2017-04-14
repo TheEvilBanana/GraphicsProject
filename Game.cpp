@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Vertex.h"
 #include "WICTextureLoader.h"
+#include "DDSTextureLoader.h" // For loading skyboxes (cube maps)
 // For the DirectX Math library
 using namespace DirectX;
 
@@ -51,7 +52,11 @@ Game::~Game()
 	delete vertexShader;
 	delete pixelShader;
 	delete material1;
+	delete skyVertexShader;
+	delete skyPixelShader;
 	//delete material2;
+	delete skyCubeMesh;
+	delete skyCubeEntity;
 
 	for (auto& e : platformEntity) delete e;
 	//for (auto& m : platformMesh) delete m;
@@ -65,6 +70,9 @@ Game::~Game()
 	normalTileSRV->Release();
 	sampler1->Release();
 
+	rasterStateSky->Release();
+	depthStateSky->Release();
+	skySRV->Release();
 	// Clean up shadow map
 	shadowDSV->Release();
 	shadowSRV->Release();
@@ -173,12 +181,21 @@ void Game::LoadShaders()
 	shadowVS = new SimpleVertexShader(device, context);
 	if (!shadowVS->LoadShaderFile(L"Debug/ShadowVS.cso"))
 		shadowVS->LoadShaderFile(L"ShadowVS.cso");
+
+	skyVertexShader = new SimpleVertexShader(device, context);
+	if (!skyVertexShader->LoadShaderFile(L"Debug/SkyVertexShader.cso"))
+		skyVertexShader->LoadShaderFile(L"SkyVertexShader.cso.cso");
+
+	skyPixelShader = new SimplePixelShader(device, context);
+	if (!skyPixelShader->LoadShaderFile(L"Debug/SkyPixelShader.cso"))
+		skyPixelShader->LoadShaderFile(L"SkyPixelShader.cso");
 }
 
 void Game::CreateMaterials() {
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Cobble.tif", 0, &sphereSRV);
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Testing_basecolor.png", 0, &tileSRV);
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Testing_normal.png", 0, &normalTileSRV);
+	CreateDDSTextureFromFile(device, L"Debug/TextureFiles/SunnyCubeMap.dds", 0, &skySRV);
 
 	D3D11_SAMPLER_DESC sampleDesc = {};
 	sampleDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -190,6 +207,19 @@ void Game::CreateMaterials() {
 	device->CreateSamplerState(&sampleDesc, &sampler1);
 
 	material1 = new Material(pixelShader, vertexShader, tileSRV, normalTileSRV, sampler1);
+
+	// Set up the rasterize state
+	D3D11_RASTERIZER_DESC rasterStateDesc = {};
+	rasterStateDesc.FillMode = D3D11_FILL_SOLID;
+	rasterStateDesc.CullMode = D3D11_CULL_FRONT;
+	rasterStateDesc.DepthClipEnable = true;
+	device->CreateRasterizerState(&rasterStateDesc, &rasterStateSky);
+
+	D3D11_DEPTH_STENCIL_DESC depthStateDesc = {};
+	depthStateDesc.DepthEnable = true;
+	depthStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	device->CreateDepthStencilState(&depthStateDesc, &depthStateSky);
 }
 
 
@@ -225,7 +255,7 @@ void Game::CreateMatrices()
 void Game::CreateBasicGeometry()
 {
 	sphereMesh = new Mesh("Debug/Models/sphere.obj", device);
-	//meshes.push_back(sphereMesh);
+	
 
 	platformMesh = new Mesh("Debug/Models/cube.obj", device);
 
@@ -257,6 +287,8 @@ void Game::CreateBasicGeometry()
 	sphereEntity->SetScale(0.5f, 0.5f, 0.5f);
 	//entities.push_back(sphere);
 
+	skyCubeMesh = new Mesh("Debug/Models/cube.obj", device);
+	skyCubeEntity = new GameEntity(skyCubeMesh, material1);
 }
 
 void Game::RenderShadowMap()
@@ -433,13 +465,6 @@ void Game::Draw(float deltaTime, float totalTime)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	/*renderer = new Renderer(sphereEntity, camera);
-	vertexBuffer = renderer->SetVertexBuffer();
-	indexBuffer = renderer->SetIndexBuffer();
-	vertexShader = renderer->SetVertexShader(shadowViewMatrix, shadowProjectionMatrix);
-	pixelShader = renderer->SetPixelShader(shadowSampler, shadowSRV);
-	delete renderer;*/
-
 	renderer.SetVertexBuffer(sphereEntity, vertexBuffer);
 	renderer.SetIndexBuffer(sphereEntity, indexBuffer);
 	renderer.SetVertexShader(vertexShader, sphereEntity, camera, shadowViewMatrix, shadowProjectionMatrix);
@@ -452,12 +477,6 @@ void Game::Draw(float deltaTime, float totalTime)
 	/*********************************************************************************************/
 
 	for (int i = 0; i <= 4; i++) {
-		/*renderer = new Renderer(platformEntity[i], camera);
-		vertexBuffer = renderer->SetVertexBuffer();
-		indexBuffer = renderer->SetIndexBuffer();
-		vertexShader = renderer->SetVertexShader(shadowViewMatrix, shadowProjectionMatrix);
-		pixelShader = renderer->SetPixelShader(shadowSampler, shadowSRV);
-		delete renderer;*/
 		renderer.SetVertexBuffer(platformEntity[i], vertexBuffer);
 		renderer.SetIndexBuffer(platformEntity[i], indexBuffer);
 		renderer.SetVertexShader(vertexShader, platformEntity[i], camera, shadowViewMatrix, shadowProjectionMatrix);
@@ -469,7 +488,30 @@ void Game::Draw(float deltaTime, float totalTime)
 	}
 
 	pixelShader->SetShaderResourceView("ShadowMap", 0);
+/***************************************************/
+	vertexBuffer = skyCubeEntity->GetMesh()->GetVertexBuffer();
+	indexBuffer = skyCubeEntity->GetMesh()->GetIndexBuffer();
 
+	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+	context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+	skyVertexShader->SetMatrix4x4("view", camera->GetView());
+	skyVertexShader->SetMatrix4x4("projection", camera->GetProjection());
+	skyVertexShader->CopyAllBufferData();
+	skyVertexShader->SetShader();
+
+	skyPixelShader->SetShaderResourceView("Sky", skySRV);
+	skyPixelShader->CopyAllBufferData();
+	skyPixelShader->SetShader();
+
+	context->RSSetState(rasterStateSky);
+	context->OMSetDepthStencilState(depthStateSky, 0);
+	context->DrawIndexed(skyCubeEntity->GetMesh()->GetIndexCount(), 0, 0);
+
+	// Reset the render states we've changed
+	context->RSSetState(0);
+	context->OMSetDepthStencilState(0, 0);
+/*************************************************************************/
 	swapChain->Present(0, 0);
 	
 }
