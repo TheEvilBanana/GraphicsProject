@@ -79,6 +79,10 @@ Game::~Game()
 	shadowRasterizer->Release();
 	shadowSampler->Release();
 	delete shadowVS;
+
+	//Clean UI Stuff
+	playButtonSprite->Release();
+	quitButtonSprite->Release();
 }
 
 // --------------------------------------------------------
@@ -94,6 +98,13 @@ void Game::Init()
 	CreateMaterials();
 	CreateMatrices();
 	CreateBasicGeometry();
+
+	//UI stuff
+
+	//Import Play Button Sprite
+	spriteBatch.reset(new SpriteBatch(context));
+	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanplaypanel.png", 0, &playButtonSprite);
+	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanquitpanel.png", 0, &quitButtonSprite);
 	
 	// Create shadow requirements ------------------------------------------
 	shadowMapSize = 2048;
@@ -369,73 +380,86 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {
-	float sinTime = (sin(totalTime * 2) + 2.0f) / 10.0f;
-	float xposition = rand() % 3;
-	
-	//Reset platforms
-	if (platformEntity[0]->GetPosition().z < -2)
-	{
-		platformEntity[0]->SetPosition(xposition, -2, 8);
-	}
-	if (platformEntity[1]->GetPosition().z < -2)
-	{
-		platformEntity[1]->SetPosition(xposition, -2, 8);
-	}
-	if (platformEntity[2]->GetPosition().z < -2)
-	{
-		platformEntity[2]->SetPosition(xposition, -2, 8);
-	}
-	if (platformEntity[3]->GetPosition().z < -2)
-	{
-		platformEntity[3]->SetPosition(xposition, -2, 8);
-	}
-	if (platformEntity[4]->GetPosition().z < -2)
-	{
-		platformEntity[4]->SetPosition(xposition, -2, 8);
-	}
 
-	//Move platforms
-	platformEntity[0]->Move(0, 0, -deltaTime * 2);
-	platformEntity[1]->Move(0, 0, -deltaTime * 2);
-	platformEntity[2]->Move(0, 0, -deltaTime * 2);
-	platformEntity[3]->Move(0, 0, -deltaTime * 2);
-	platformEntity[4]->Move(0, 0, -deltaTime * 2);
+	if (mouseAtPlay)
+	{
+		gameState = GamePlay;
+		float sinTime = (sin(totalTime * 2) + 2.0f) / 10.0f;
+		float xposition = rand() % 3;
 
-	//Move Player
-	if (GetAsyncKeyState('Z') & 0x8000)
-	{
-		sphereEntity->Move(-0.005, 0, 0);
-	}
-	if (GetAsyncKeyState('C') & 0x8000)
-	{
-		sphereEntity->Move(0.005, 0, 0);
-	}
-
-	if (sphereEntity->GetPosition().y < -1.6f)
-	{
-		
-		if ((sphereEntity->GetPosition().x - .35f) < (platformEntity[platformCount % 5]->GetPosition().x + 0.5f) && (sphereEntity->GetPosition().x + .35f) >(platformEntity[platformCount % 5]->GetPosition().x - 0.5f))
+		//Reset platforms
+		if (platformEntity[0]->GetPosition().z < -2)
 		{
-			speed = 10.0f;
-			//printf("Collision!");
-			platformCount++;
+			platformEntity[0]->SetPosition(xposition, -2, 8);
 		}
+		if (platformEntity[1]->GetPosition().z < -2)
+		{
+			platformEntity[1]->SetPosition(xposition, -2, 8);
+		}
+		if (platformEntity[2]->GetPosition().z < -2)
+		{
+			platformEntity[2]->SetPosition(xposition, -2, 8);
+		}
+		if (platformEntity[3]->GetPosition().z < -2)
+		{
+			platformEntity[3]->SetPosition(xposition, -2, 8);
+		}
+		if (platformEntity[4]->GetPosition().z < -2)
+		{
+			platformEntity[4]->SetPosition(xposition, -2, 8);
+		}
+
+		//Move platforms
+		platformEntity[0]->Move(0, 0, -deltaTime * 2);
+		platformEntity[1]->Move(0, 0, -deltaTime * 2);
+		platformEntity[2]->Move(0, 0, -deltaTime * 2);
+		platformEntity[3]->Move(0, 0, -deltaTime * 2);
+		platformEntity[4]->Move(0, 0, -deltaTime * 2);
+
+		//Move Player
+		if (GetAsyncKeyState('Z') & 0x8000)
+		{
+			sphereEntity->Move(-0.005, 0, 0);
+		}
+		if (GetAsyncKeyState('C') & 0x8000)
+		{
+			sphereEntity->Move(0.005, 0, 0);
+		}
+
+		if (sphereEntity->GetPosition().y < -1.6f)
+		{
+
+			if ((sphereEntity->GetPosition().x - .35f) < (platformEntity[platformCount % 5]->GetPosition().x + 0.5f) && (sphereEntity->GetPosition().x + .35f) >(platformEntity[platformCount % 5]->GetPosition().x - 0.5f))
+			{
+				speed = 10.0f;
+				//printf("Collision!");
+				platformCount++;
+			}
+		}
+
+		speed = speed - (gravity * deltaTime);
+
+		sphereEntity->Move(0, speed*deltaTime, 0);
+
+		// Update the camera
+		camera->Update(deltaTime);
+
+		platformEntity[0]->UpdateWorldMatrix();
+		platformEntity[1]->UpdateWorldMatrix();
+		platformEntity[2]->UpdateWorldMatrix();
+		platformEntity[3]->UpdateWorldMatrix();
+		platformEntity[4]->UpdateWorldMatrix();
+		sphereEntity->UpdateWorldMatrix();
+	}
+	else
+	{
+		gameState = MainMenu;
 	}
 
-	speed = speed - (gravity * deltaTime);
-
-	sphereEntity->Move(0, speed*deltaTime, 0);
-
-	// Update the camera
-	camera->Update(deltaTime);
-
-	platformEntity[0]->UpdateWorldMatrix();
-	platformEntity[1]->UpdateWorldMatrix();
-	platformEntity[2]->UpdateWorldMatrix();
-	platformEntity[3]->UpdateWorldMatrix();
-	platformEntity[4]->UpdateWorldMatrix();
-	sphereEntity->UpdateWorldMatrix();
-
+	if (mouseAtQuit)
+	{
+		gameState = Exit;
+	}
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
@@ -447,10 +471,10 @@ void Game::Update(float deltaTime, float totalTime)
 // --------------------------------------------------------
 void Game::Draw(float deltaTime, float totalTime)
 {
-	RenderShadowMap();
+	
 
 	// Background color (Cornflower Blue in this case) for clearing
-	const float color[4] = {0.4f, 0.6f, 0.75f, 0.0f};
+	const float color[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
 	// Clear the render target and depth buffer (erases what's on the screen)
 	//  - Do this ONCE PER FRAME
@@ -465,52 +489,77 @@ void Game::Draw(float deltaTime, float totalTime)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	renderer.SetVertexBuffer(sphereEntity, vertexBuffer);
-	renderer.SetIndexBuffer(sphereEntity, indexBuffer);
-	renderer.SetVertexShader(vertexShader, sphereEntity, camera, shadowViewMatrix, shadowProjectionMatrix);
-	renderer.SetPixelShader(pixelShader, sphereEntity, camera, shadowSampler, shadowSRV);
+	switch (gameState)
+	{
+	case MainMenu:
+		spriteBatch->Begin();
 
-	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-	context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	context->DrawIndexed(sphereEntity->GetMesh()->GetIndexCount(), 0, 0);
+		spriteBatch->Draw(playButtonSprite, playSpritePosition);
+		spriteBatch->Draw(quitButtonSprite, quitSpritePosition);
 
-	/*********************************************************************************************/
-
-	for (int i = 0; i <= 4; i++) {
-		renderer.SetVertexBuffer(platformEntity[i], vertexBuffer);
-		renderer.SetIndexBuffer(platformEntity[i], indexBuffer);
-		renderer.SetVertexShader(vertexShader, platformEntity[i], camera, shadowViewMatrix, shadowProjectionMatrix);
-		renderer.SetPixelShader(pixelShader, platformEntity[i], camera, shadowSampler, shadowSRV);
+		spriteBatch->End();
+		break;
+	
+	case GamePlay:
+		RenderShadowMap();
+		renderer.SetVertexBuffer(sphereEntity, vertexBuffer);
+		renderer.SetIndexBuffer(sphereEntity, indexBuffer);
+		renderer.SetVertexShader(vertexShader, sphereEntity, camera, shadowViewMatrix, shadowProjectionMatrix);
+		renderer.SetPixelShader(pixelShader, sphereEntity, camera, shadowSampler, shadowSRV);
 
 		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		context->DrawIndexed(platformEntity[i]->GetMesh()->GetIndexCount(), 0, 0);
+		context->DrawIndexed(sphereEntity->GetMesh()->GetIndexCount(), 0, 0);
+
+		/*********************************************************************************************/
+
+		for (int i = 0; i <= 4; i++) {
+			renderer.SetVertexBuffer(platformEntity[i], vertexBuffer);
+			renderer.SetIndexBuffer(platformEntity[i], indexBuffer);
+			renderer.SetVertexShader(vertexShader, platformEntity[i], camera, shadowViewMatrix, shadowProjectionMatrix);
+			renderer.SetPixelShader(pixelShader, platformEntity[i], camera, shadowSampler, shadowSRV);
+
+			context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+			context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+			context->DrawIndexed(platformEntity[i]->GetMesh()->GetIndexCount(), 0, 0);
+		}
+
+		pixelShader->SetShaderResourceView("ShadowMap", 0);
+		/***************************************************/
+		vertexBuffer = skyCubeEntity->GetMesh()->GetVertexBuffer();
+		indexBuffer = skyCubeEntity->GetMesh()->GetIndexBuffer();
+
+		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+		skyVertexShader->SetMatrix4x4("view", camera->GetView());
+		skyVertexShader->SetMatrix4x4("projection", camera->GetProjection());
+		skyVertexShader->CopyAllBufferData();
+		skyVertexShader->SetShader();
+
+		skyPixelShader->SetShaderResourceView("Sky", skySRV);
+		skyPixelShader->CopyAllBufferData();
+		skyPixelShader->SetShader();
+
+		context->RSSetState(rasterStateSky);
+		context->OMSetDepthStencilState(depthStateSky, 0);
+		context->DrawIndexed(skyCubeEntity->GetMesh()->GetIndexCount(), 0, 0);
+
+		// Reset the render states we've changed
+		context->RSSetState(0);
+		context->OMSetDepthStencilState(0, 0);
+		break;
+	
+	case Exit:
+		Quit();
+		break;
+	
+	default:
+		break;
 	}
 
-	pixelShader->SetShaderResourceView("ShadowMap", 0);
-/***************************************************/
-	vertexBuffer = skyCubeEntity->GetMesh()->GetVertexBuffer();
-	indexBuffer = skyCubeEntity->GetMesh()->GetIndexBuffer();
 
-	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-	context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-
-	skyVertexShader->SetMatrix4x4("view", camera->GetView());
-	skyVertexShader->SetMatrix4x4("projection", camera->GetProjection());
-	skyVertexShader->CopyAllBufferData();
-	skyVertexShader->SetShader();
-
-	skyPixelShader->SetShaderResourceView("Sky", skySRV);
-	skyPixelShader->CopyAllBufferData();
-	skyPixelShader->SetShader();
-
-	context->RSSetState(rasterStateSky);
-	context->OMSetDepthStencilState(depthStateSky, 0);
-	context->DrawIndexed(skyCubeEntity->GetMesh()->GetIndexCount(), 0, 0);
-
-	// Reset the render states we've changed
-	context->RSSetState(0);
-	context->OMSetDepthStencilState(0, 0);
+	
 /*************************************************************************/
 	swapChain->Present(0, 0);
 	
@@ -531,6 +580,24 @@ void Game::OnMouseDown(WPARAM buttonState, int x, int y)
 	// Save the previous mouse position, so we have it for the future
 	prevMousePos.x = x;
 	prevMousePos.y = y;
+
+	//Check if the play button is clicked
+	if (((x > playSpritePosition.x - 250) && (x < playSpritePosition.x + 250)) && ((y > playSpritePosition.y - 250) && (y < playSpritePosition.y + 250)))
+	{
+		if (buttonState & 0x0001)
+		{
+			mouseAtPlay = true;
+		}
+	}
+
+	//Check if the quit button is clicked
+	if (((x > quitSpritePosition.x - 250) && (x < quitSpritePosition.x + 250)) && ((y > quitSpritePosition.y - 250) && (y < quitSpritePosition.y + 250)))
+	{
+		if (buttonState & 0x0001)
+		{
+			mouseAtQuit = true;
+		}
+	}
 
 	// Caputure the mouse so we keep getting mouse move
 	// events even if the mouse leaves the window.  we'll be

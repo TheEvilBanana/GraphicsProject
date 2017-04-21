@@ -9,6 +9,7 @@
 #include "Lights.h"
 #include <vector>
 #include <DirectXMath.h>
+#include "SpriteBatch.h"
 
 class Game 
 	: public DXCore
@@ -101,5 +102,25 @@ private:
 	float gravity = 20.0f;
 	float speed = 10.0f;
 	int platformCount = 1;
+
+
+	//UI stuff
+	std::unique_ptr<SpriteBatch> spriteBatch;
+	ID3D11ShaderResourceView* playButtonSprite;
+	ID3D11ShaderResourceView* quitButtonSprite;
+	XMFLOAT2 playSpritePosition = XMFLOAT2(width / 2, height / 2);
+	XMFLOAT2 quitSpritePosition = XMFLOAT2(width / 2, height / 2 + 200);
+	bool mouseAtPlay = false;
+	bool mouseAtQuit = false;
+
+
+	//Game State Management
+	enum  GameStateManager
+	{
+		MainMenu,
+		GamePlay,
+		Exit
+	};
+	GameStateManager gameState;
 };
 
