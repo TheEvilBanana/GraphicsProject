@@ -606,7 +606,7 @@ void Game::OnMouseDown(WPARAM buttonState, int x, int y)
 	prevMousePos.y = y;
 
 	//Check if the play button is clicked
-	if (((x > playSpritePosition.x - 250) && (x < playSpritePosition.x + 250)) && ((y > playSpritePosition.y - 250) && (y < playSpritePosition.y + 250)))
+	if (((x > playSpritePosition.x) && (x < playSpritePosition.x+300)) && ((y > playSpritePosition.y) && (y < playSpritePosition.y + 120)))
 	{
 		if (buttonState & 0x0001)
 		{
@@ -615,7 +615,7 @@ void Game::OnMouseDown(WPARAM buttonState, int x, int y)
 	}
 
 	//Check if the quit button is clicked
-	if (((x > quitSpritePosition.x - 250) && (x < quitSpritePosition.x + 250)) && ((y > quitSpritePosition.y - 250) && (y < quitSpritePosition.y + 250)))
+	if (((x > quitSpritePosition.x) && (x < quitSpritePosition.x + 250)) && ((y > quitSpritePosition.y) && (y < quitSpritePosition.y + 120)))
 	{
 		if (buttonState & 0x0001)
 		{
