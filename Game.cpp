@@ -80,6 +80,9 @@ Game::~Game()
 	shadowSampler->Release();
 	delete shadowVS;
 
+	// Clean Blend Stuff
+	blendState->Release();
+
 	//Clean UI Stuff
 	playButtonSprite->Release();
 	quitButtonSprite->Release();
@@ -167,6 +170,23 @@ void Game::Init()
 	shadowRastDesc.SlopeScaledDepthBias = 1.0f;
 	device->CreateRasterizerState(&shadowRastDesc, &shadowRasterizer);
 
+	//Blending State
+	//Set up the Blend Desc
+	D3D11_BLEND_DESC blendDesc;                                             
+	ZeroMemory(&blendDesc, sizeof(blendDesc));
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	//Settign the Blend Desc to FALSE [will be be used in 'OMBlendState' in Draw functiom]
+	blendDesc.RenderTarget[0].BlendEnable = FALSE;
+	device->CreateBlendState(&blendDesc, &blendState);
+	
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
@@ -474,7 +494,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 
 	// Background color (Cornflower Blue in this case) for clearing
-	const float color[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+	const float color[4] = {0.0f, 1.0f, 0.0f, 0.0f};
 
 	// Clear the render target and depth buffer (erases what's on the screen)
 	//  - Do this ONCE PER FRAME
@@ -501,6 +521,9 @@ void Game::Draw(float deltaTime, float totalTime)
 		break;
 	
 	case GamePlay:
+	{
+		float blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};  // Set blend factor[inconsequential, since not using]
+		context->OMSetBlendState(blendState, blendFactor, 0xFFFFFFFF); // Setting the blend state
 		RenderShadowMap();
 		renderer.SetVertexBuffer(sphereEntity, vertexBuffer);
 		renderer.SetIndexBuffer(sphereEntity, indexBuffer);
@@ -548,6 +571,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Reset the render states we've changed
 		context->RSSetState(0);
 		context->OMSetDepthStencilState(0, 0);
+	}
 		break;
 	
 	case Exit:
