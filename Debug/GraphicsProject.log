@@ -1,23 +1,15 @@
-﻿  compilation object save succeeded; see D:\Class Stuff\Game Graphics\GraphicsProject\Debug\SkyPixelShader.cso
-  Main.cpp
-d:\class stuff\game graphics\graphicsproject\game.h(118): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
-d:\class stuff\game graphics\graphicsproject\game.h(119): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
-  Game.cpp
-d:\class stuff\game graphics\graphicsproject\game.h(118): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
-d:\class stuff\game graphics\graphicsproject\game.h(119): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
-d:\class stuff\game graphics\graphicsproject\game.cpp(8): warning C4005: 'max': macro redefinition
+﻿  Game.cpp
+d:\game design and development\sem 2\game graphics programming\graphicsproject\game.h(124): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+d:\game design and development\sem 2\game graphics programming\graphicsproject\game.h(125): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(8): warning C4005: 'max': macro redefinition
   c:\program files (x86)\windows kits\8.1\include\shared\minwindef.h(193): note: see previous definition of 'max'
-d:\class stuff\game graphics\graphicsproject\game.cpp(9): warning C4005: 'min': macro redefinition
+d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(9): warning C4005: 'min': macro redefinition
   c:\program files (x86)\windows kits\8.1\include\shared\minwindef.h(197): note: see previous definition of 'min'
-d:\class stuff\game graphics\graphicsproject\game.cpp(312): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\class stuff\game graphics\graphicsproject\game.cpp(313): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\class stuff\game graphics\graphicsproject\game.cpp(314): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\class stuff\game graphics\graphicsproject\game.cpp(315): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\class stuff\game graphics\graphicsproject\game.cpp(316): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\class stuff\game graphics\graphicsproject\game.cpp(410): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-d:\class stuff\game graphics\graphicsproject\game.cpp(444): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\class stuff\game graphics\graphicsproject\game.cpp(448): warning C4305: 'argument': truncation from 'double' to 'float'
-  Generating Code...
-  LINK : D:\Class Stuff\Game Graphics\GraphicsProject\Debug\GraphicsProject.exe not found or not built by the last incremental link; performing full link
-  GraphicsProject.vcxproj -> D:\Class Stuff\Game Graphics\GraphicsProject\Debug\GraphicsProject.exe
-  GraphicsProject.vcxproj -> D:\Class Stuff\Game Graphics\GraphicsProject\Debug\GraphicsProject.pdb (Full PDB)
+d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(312): warning C4305: 'argument': truncation from 'double' to 'float'
+d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(313): warning C4305: 'argument': truncation from 'double' to 'float'
+d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(314): warning C4305: 'argument': truncation from 'double' to 'float'
+d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(315): warning C4305: 'argument': truncation from 'double' to 'float'
+d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(316): warning C4305: 'argument': truncation from 'double' to 'float'
+d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(435): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+  GraphicsProject.vcxproj -> D:\Game Design and Development\Sem 2\Game Graphics Programming\GraphicsProject\Debug\GraphicsProject.exe
+  GraphicsProject.vcxproj -> D:\Game Design and Development\Sem 2\Game Graphics Programming\GraphicsProject\Debug\GraphicsProject.pdb (Full PDB)

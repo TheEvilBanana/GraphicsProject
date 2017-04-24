@@ -402,9 +402,34 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {
-
 	if (mouseAtPlay)
 	{
+
+		bool currentTab = (GetAsyncKeyState('P') & 0x8000) != 0;
+		if (currentTab && !prevTab)
+			paused = !paused;
+		prevTab = currentTab;
+
+
+		if (paused)
+		{
+			timeScale = 0;
+		}
+		else
+		{
+			//speed = currentSpeed;
+			if (score <= 5)
+			{
+				timeScale = deltaTime;
+
+			}
+			if (score > 5)
+			{
+				timeScale = deltaTime * 2;
+			}
+		}
+		
+
 		gameState = GamePlay;
 		float sinTime = (sin(totalTime * 2) + 2.0f) / 10.0f;
 		float xposition = rand() % 3;
@@ -432,20 +457,20 @@ void Game::Update(float deltaTime, float totalTime)
 		}
 
 		//Move platforms
-		platformEntity[0]->Move(0, 0, -deltaTime * 2);
-		platformEntity[1]->Move(0, 0, -deltaTime * 2);
-		platformEntity[2]->Move(0, 0, -deltaTime * 2);
-		platformEntity[3]->Move(0, 0, -deltaTime * 2);
-		platformEntity[4]->Move(0, 0, -deltaTime * 2);
+		platformEntity[0]->Move(0, 0, -timeScale * 2);
+		platformEntity[1]->Move(0, 0, -timeScale * 2);
+		platformEntity[2]->Move(0, 0, -timeScale * 2);
+		platformEntity[3]->Move(0, 0, -timeScale * 2);
+		platformEntity[4]->Move(0, 0, -timeScale * 2);
 
 		//Move Player
-		if (GetAsyncKeyState('Z') & 0x8000)
+		if (GetAsyncKeyState('A') & 0x8000)
 		{
-			sphereEntity->Move(-0.005, 0, 0);
+			sphereEntity->Move(-timeScale*2, 0, 0);
 		}
-		if (GetAsyncKeyState('C') & 0x8000)
+		if (GetAsyncKeyState('D') & 0x8000)
 		{
-			sphereEntity->Move(0.005, 0, 0);
+			sphereEntity->Move(timeScale*2, 0, 0);
 		}
 
 		if (sphereEntity->GetPosition().y < -1.6f)
@@ -453,15 +478,16 @@ void Game::Update(float deltaTime, float totalTime)
 
 			if ((sphereEntity->GetPosition().x - .35f) < (platformEntity[platformCount % 5]->GetPosition().x + 0.5f) && (sphereEntity->GetPosition().x + .35f) >(platformEntity[platformCount % 5]->GetPosition().x - 0.5f))
 			{
-				speed = 10.0f;
-				//printf("Collision!");
+				speed = constSpeed;
+				score++;
+				//printf("%d", score);
 				platformCount++;
 			}
 		}
 
-		speed = speed - (gravity * deltaTime);
+		speed = speed - (gravity * timeScale);
 
-		sphereEntity->Move(0, speed*deltaTime, 0);
+		sphereEntity->Move(0, speed*timeScale, 0);
 
 		// Update the camera
 		camera->Update(deltaTime);
@@ -675,7 +701,7 @@ void Game::OnMouseMove(WPARAM buttonState, int x, int y)
 	if (buttonState & 0x0001) {
 		float xDiff = (x - prevMousePos.x) * 0.005f;
 		float yDiff = (y - prevMousePos.y) * 0.005f;
-		camera->Rotate(yDiff, xDiff);
+		//camera->Rotate(yDiff, xDiff);
 	}
 
 	// Save the previous mouse position, so we have it for the future

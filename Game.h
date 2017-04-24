@@ -108,8 +108,14 @@ private:
 
 	float gravity = 20.0f;
 	float speed = 10.0f;
+	float constSpeed = 10.0f;
+	float currentSpeed = speed;
 	int platformCount = 1;
+	int score = 0;
+	float timeScale;
+	bool prevTab;
 
+	bool paused = false;
 
 	//UI stuff
 	std::unique_ptr<SpriteBatch> spriteBatch;

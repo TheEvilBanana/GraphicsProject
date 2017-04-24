@@ -60,12 +60,12 @@ void Camera::Update(float dt) {
 	if (GetAsyncKeyState(VK_CONTROL)) { speed *= 0.1f; }
 
 	// Movement
-	if (GetAsyncKeyState('W') & 0x8000) { MoveRelative(0, 0, speed); }
+	/*if (GetAsyncKeyState('W') & 0x8000) { MoveRelative(0, 0, speed); }
 	if (GetAsyncKeyState('S') & 0x8000) { MoveRelative(0, 0, -speed); }
 	if (GetAsyncKeyState('A') & 0x8000) { MoveRelative(-speed, 0, 0); }
 	if (GetAsyncKeyState('D') & 0x8000) { MoveRelative(speed, 0, 0); }
 	if (GetAsyncKeyState('X') & 0x8000) { MoveAbsolute(0, -speed, 0); }
-	if (GetAsyncKeyState(' ') & 0x8000) { MoveAbsolute(0, speed, 0); }
+	if (GetAsyncKeyState(' ') & 0x8000) { MoveAbsolute(0, speed, 0); }*/
 
 	// Check for reset
 	if (GetAsyncKeyState('R') & 0x8000) {
