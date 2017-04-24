@@ -57,7 +57,8 @@ private:
 	ID3D11SamplerState* sampler1;
 
 	//Sky
-	ID3D11ShaderResourceView* skySRV;
+	ID3D11ShaderResourceView* skySRV1;
+	ID3D11ShaderResourceView* skySRV2;
 	SimpleVertexShader* skyVertexShader;
 	SimplePixelShader* skyPixelShader;
 	ID3D11RasterizerState* rasterStateSky;
@@ -66,6 +67,9 @@ private:
 	Mesh* skyCubeMesh;
 	GameEntity* skyCubeEntity;
 
+	float skyLerpValue = 0.0f;
+	int counterLerp = 0;
+	bool lerpState = true;
 	// The matrices to go from model space to screen space
 	DirectX::XMFLOAT4X4 worldMatrix;
 	DirectX::XMFLOAT4X4 viewMatrix;

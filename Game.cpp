@@ -72,7 +72,8 @@ Game::~Game()
 
 	rasterStateSky->Release();
 	depthStateSky->Release();
-	skySRV->Release();
+	skySRV1->Release();
+	skySRV2->Release();
 	// Clean up shadow map
 	shadowDSV->Release();
 	shadowSRV->Release();
@@ -226,7 +227,8 @@ void Game::CreateMaterials() {
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Cobble.tif", 0, &sphereSRV);
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Testing_basecolor.png", 0, &tileSRV);
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Testing_normal.png", 0, &normalTileSRV);
-	CreateDDSTextureFromFile(device, L"Debug/TextureFiles/SunnyCubeMap.dds", 0, &skySRV);
+	CreateDDSTextureFromFile(device, L"Debug/TextureFiles/Stormy.dds", 0, &skySRV1);
+	CreateDDSTextureFromFile(device, L"Debug/TextureFiles/Sunset.dds", 0, &skySRV2);
 
 	D3D11_SAMPLER_DESC sampleDesc = {};
 	sampleDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -470,6 +472,25 @@ void Game::Update(float deltaTime, float totalTime)
 		platformEntity[3]->UpdateWorldMatrix();
 		platformEntity[4]->UpdateWorldMatrix();
 		sphereEntity->UpdateWorldMatrix();
+
+		// Changinh alpha value for skybox lerp
+		counterLerp++;                     // Using counter for tracking change
+		if (counterLerp % 100 == 0) {
+			if (lerpState == true) {         // Lerp state used for tracking whether increment or decrement alpha value
+				skyLerpValue += 0.01f;
+			}
+			if (lerpState == false) {
+				skyLerpValue -= 0.01f;
+			}
+		}
+
+		if (counterLerp % 10000 == 0) {               // changeing lerstate logic
+			lerpState = false;
+			if (counterLerp % 20000 == 0) {
+				lerpState = true;
+				counterLerp = 0;
+			}
+		}
 	}
 	else
 	{
@@ -560,7 +581,9 @@ void Game::Draw(float deltaTime, float totalTime)
 		skyVertexShader->CopyAllBufferData();
 		skyVertexShader->SetShader();
 
-		skyPixelShader->SetShaderResourceView("Sky", skySRV);
+		skyPixelShader->SetShaderResourceView("Sky1", skySRV1);
+		skyPixelShader->SetShaderResourceView("Sky2", skySRV2);
+		skyPixelShader->SetData("lerpValue", &skyLerpValue, sizeof(skyLerpValue));
 		skyPixelShader->CopyAllBufferData();
 		skyPixelShader->SetShader();
 
