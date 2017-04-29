@@ -36,6 +36,9 @@ struct DirectionalLight {
 cbuffer ExternalData : register(b0) {
 	DirectionalLight dirLight1;
 	//DirectionalLight dirLight2;
+	float4 pointLightColor;
+	float3 pointLightPosition;
+	float3 cameraPosition;
 };
 
 // --------------------------------------------------------
@@ -53,6 +56,15 @@ float4 main(VertexToPixel input) : SV_TARGET
 	input.normal = normalize(input.normal);
     input.tangent = normalize(input.tangent);
 
+	//N dot L for point light
+	float3 dirToPointLight = normalize(pointLightPosition - input.worldPos);
+	float lightAmountPL = saturate(dot(input.normal, dirToPointLight));
+
+	//Specular highlight for point light
+	float3 toCamera = normalize(cameraPosition - input.worldPos);
+	float3 refl = reflect(-dirToPointLight, input.normal);
+	float specular = pow(saturate(dot(refl, toCamera)), 8);
+
 	float3 normalFromMap = normalMapSRV.Sample(basicSampler, input.uv).xyz * 2 - 1;
 
 	// Transform from tangent to world space
@@ -69,7 +81,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	float4 surfaceColor = textureSRV.Sample(basicSampler, input.uv);
 
-	float4 light1 = ((dirLight1.diffuseColor * lightAmount1 * surfaceColor) + (dirLight1.ambientColor * surfaceColor));
+	float4 light1 = ((dirLight1.diffuseColor * lightAmount1 * surfaceColor) + (dirLight1.ambientColor * surfaceColor)) + specular;
 	//float4 light2 = ((dirLight2.diffuseColor * lightAmount2 * surfaceColor) + (dirLight2.ambientColor * surfaceColor));
 	//float4 totalLight = light1 + light2;
 

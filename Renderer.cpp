@@ -41,6 +41,9 @@ void Renderer::SetPixelShader(SimplePixelShader* &pixelShader, GameEntity* &game
 	pixelShader = gameEntity->GetMaterial()->GetPixelShader();
 	pixelShader->SetData("dirLight1", &dirLight1, sizeof(DirectionalLight));
 	//pixelShader->SetData("dirLight2", &dirLight2, sizeof(DirectionalLight));
+	pixelShader->SetFloat3("pointLightPosition", XMFLOAT3(2, 2, 0));
+	pixelShader->SetFloat4("pointLightColor", XMFLOAT4(0.1, 0.1f, 1, 1));
+	pixelShader->SetFloat3("cameraPosition", XMFLOAT3(0, 0, -5));
 
 	pixelShader->SetShaderResourceView("textureSRV", gameEntity->GetMaterial()->GetMaterialSRV());
 	pixelShader->SetShaderResourceView("normalMapSRV", gameEntity->GetMaterial()->GetNormalSRV());
