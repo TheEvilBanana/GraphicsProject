@@ -10,6 +10,7 @@
 #include <vector>
 #include <DirectXMath.h>
 #include "SpriteBatch.h"
+#include "Emitter.h"
 
 class Game 
 	: public DXCore
@@ -84,6 +85,16 @@ private:
 	SimpleVertexShader* shadowVS;
 	DirectX::XMFLOAT4X4 shadowViewMatrix;
 	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
+
+	// Particle stuff
+	ID3D11ShaderResourceView* particleTexture;
+	ID3D11BlendState* particleBlendState;
+	ID3D11DepthStencilState* particleDepthState;
+
+	Emitter* emitter;
+
+	SimpleVertexShader* particleVS;
+	SimplePixelShader* particlePS;
 
 	//Blend Stuff
 	ID3D11BlendState* blendState;

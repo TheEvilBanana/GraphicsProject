@@ -87,6 +87,14 @@ Game::~Game()
 	//Clean UI Stuff
 	playButtonSprite->Release();
 	quitButtonSprite->Release();
+
+	//Clean up particle
+	delete emitter;
+	delete particleVS;
+	delete particlePS;
+	particleTexture->Release();
+	particleBlendState->Release();
+	particleDepthState->Release();
 }
 
 // --------------------------------------------------------
@@ -188,6 +196,7 @@ void Game::Init()
 	blendDesc.RenderTarget[0].BlendEnable = FALSE;
 	device->CreateBlendState(&blendDesc, &blendState);
 	
+	
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
@@ -221,6 +230,15 @@ void Game::LoadShaders()
 	skyPixelShader = new SimplePixelShader(device, context);
 	if (!skyPixelShader->LoadShaderFile(L"Debug/SkyPixelShader.cso"))
 		skyPixelShader->LoadShaderFile(L"SkyPixelShader.cso");
+
+	// Load particle shaders
+	particleVS = new SimpleVertexShader(device, context);
+	if (!particleVS->LoadShaderFile(L"Debug/ParticleVS.cso"))
+		particleVS->LoadShaderFile(L"ParticleVS.cso");
+
+	particlePS = new SimplePixelShader(device, context);
+	if (!particlePS->LoadShaderFile(L"Debug/ParticlePS.cso"))
+		particlePS->LoadShaderFile(L"ParticlePS.cso");
 }
 
 void Game::CreateMaterials() {
@@ -229,6 +247,7 @@ void Game::CreateMaterials() {
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Testing_normal.png", 0, &normalTileSRV);
 	CreateDDSTextureFromFile(device, L"Debug/TextureFiles/Stormy.dds", 0, &skySRV1);
 	CreateDDSTextureFromFile(device, L"Debug/TextureFiles/Sunset.dds", 0, &skySRV2);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/particle.jpg", 0, &particleTexture);
 
 	D3D11_SAMPLER_DESC sampleDesc = {};
 	sampleDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -253,6 +272,47 @@ void Game::CreateMaterials() {
 	depthStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	depthStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	device->CreateDepthStencilState(&depthStateDesc, &depthStateSky);
+
+	// Particle states ------------------------
+
+	// A depth state for the particles
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // Turns off depth writing
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	device->CreateDepthStencilState(&dsDesc, &particleDepthState);
+
+
+	// Blend for particles (additive)
+	D3D11_BLEND_DESC blend = {};
+	blend.AlphaToCoverageEnable = false;
+	blend.IndependentBlendEnable = false;
+	blend.RenderTarget[0].BlendEnable = true;
+	blend.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&blend, &particleBlendState);
+
+	// Set up particles
+	emitter = new Emitter(
+		200,							// Max particles
+		200,							// Particles per second
+		1,								// Particle lifetime
+		1.0f,							// Start size
+		3.0f,							// End size
+		XMFLOAT4(0, 1.0f, 0.1f, 0.5f),	// Start color
+		XMFLOAT4(0, 1.0f, 0.1f, 0),		// End color
+		XMFLOAT3(0, 1, 0),				// Start velocity
+		XMFLOAT3(0, -2, 0),				// Start position
+		XMFLOAT3(0, 0, 0),				// Start acceleration
+		device,
+		particleVS,
+		particlePS,
+		particleTexture);
 }
 
 
@@ -478,10 +538,13 @@ void Game::Update(float deltaTime, float totalTime)
 
 			if ((sphereEntity->GetPosition().x - .35f) < (platformEntity[platformCount % 5]->GetPosition().x + 0.5f) && (sphereEntity->GetPosition().x + .35f) >(platformEntity[platformCount % 5]->GetPosition().x - 0.5f))
 			{
+				
 				speed = constSpeed;
 				score++;
-				//printf("%d", score);
+				printf("%d", score);
+				emitter->SpawnParticle();
 				platformCount++;
+				
 			}
 		}
 
@@ -489,6 +552,7 @@ void Game::Update(float deltaTime, float totalTime)
 
 		sphereEntity->Move(0, speed*timeScale, 0);
 
+		emitter->Update(deltaTime);
 		// Update the camera
 		camera->Update(deltaTime);
 
@@ -541,7 +605,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 
 	// Background color (Cornflower Blue in this case) for clearing
-	const float color[4] = {0.0f, 1.0f, 0.0f, 0.0f};
+	const float color[4] = {1.0f, 1.0f, 0.0f, 0.0f};
 
 	// Clear the render target and depth buffer (erases what's on the screen)
 	//  - Do this ONCE PER FRAME
@@ -619,6 +683,18 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		// Reset the render states we've changed
 		context->RSSetState(0);
+		context->OMSetDepthStencilState(0, 0);
+
+		// Particle states
+		float blend[4] = {1,1,1,1};
+		context->OMSetBlendState(particleBlendState, blend, 0xffffffff);  // Additive blending
+		context->OMSetDepthStencilState(particleDepthState, 0);			// No depth WRITING
+
+																		// Draw the emitter
+		emitter->Draw(context, camera);
+
+		// Reset to default states for next frame
+		context->OMSetBlendState(0, blend, 0xffffffff);
 		context->OMSetDepthStencilState(0, 0);
 	}
 		break;
