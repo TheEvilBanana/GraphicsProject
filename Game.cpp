@@ -87,6 +87,7 @@ Game::~Game()
 	//Clean UI Stuff
 	playButtonSprite->Release();
 	quitButtonSprite->Release();
+	scoreUISprite->Release();
 
 	//Clean up particle
 	delete emitter;
@@ -117,6 +118,7 @@ void Game::Init()
 	spriteBatch.reset(new SpriteBatch(context));
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanplaypanel.png", 0, &playButtonSprite);
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanquitpanel.png", 0, &quitButtonSprite);
+	CreateWICTextureFromFile(device, L"Debug/TextureFiles/scoreUIBg.png", 0, &scoreUISprite);
 	
 	// Create shadow requirements ------------------------------------------
 	shadowMapSize = 2048;
@@ -633,6 +635,32 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 	case GamePlay:
 	{
+		//SkyBox
+		vertexBuffer = skyCubeEntity->GetMesh()->GetVertexBuffer();
+		indexBuffer = skyCubeEntity->GetMesh()->GetIndexBuffer();
+
+		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+		skyVertexShader->SetMatrix4x4("view", camera->GetView());
+		skyVertexShader->SetMatrix4x4("projection", camera->GetProjection());
+		skyVertexShader->CopyAllBufferData();
+		skyVertexShader->SetShader();
+
+		skyPixelShader->SetShaderResourceView("Sky1", skySRV1);
+		skyPixelShader->SetShaderResourceView("Sky2", skySRV2);
+		skyPixelShader->SetData("lerpValue", &skyLerpValue, sizeof(skyLerpValue));
+		skyPixelShader->CopyAllBufferData();
+		skyPixelShader->SetShader();
+
+		context->RSSetState(rasterStateSky);
+		context->OMSetDepthStencilState(depthStateSky, 0);
+		context->DrawIndexed(skyCubeEntity->GetMesh()->GetIndexCount(), 0, 0);
+
+		// Reset the render states we've changed
+		context->RSSetState(0);
+		context->OMSetDepthStencilState(0, 0);
+		/***************************************************************************/
 		float blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};  // Set blend factor[inconsequential, since not using]
 		context->OMSetBlendState(blendState, blendFactor, 0xFFFFFFFF); // Setting the blend state
 		RenderShadowMap();
@@ -660,31 +688,14 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		pixelShader->SetShaderResourceView("ShadowMap", 0);
 		/***************************************************/
-		vertexBuffer = skyCubeEntity->GetMesh()->GetVertexBuffer();
-		indexBuffer = skyCubeEntity->GetMesh()->GetIndexBuffer();
+		//Score UI
+		spriteBatch->Begin();
+		spriteBatch->Draw(scoreUISprite, XMFLOAT2(width / 2 - 600, height / 2 - 350));
+		spriteBatch->End();
 
-		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-		skyVertexShader->SetMatrix4x4("view", camera->GetView());
-		skyVertexShader->SetMatrix4x4("projection", camera->GetProjection());
-		skyVertexShader->CopyAllBufferData();
-		skyVertexShader->SetShader();
-
-		skyPixelShader->SetShaderResourceView("Sky1", skySRV1);
-		skyPixelShader->SetShaderResourceView("Sky2", skySRV2);
-		skyPixelShader->SetData("lerpValue", &skyLerpValue, sizeof(skyLerpValue));
-		skyPixelShader->CopyAllBufferData();
-		skyPixelShader->SetShader();
-
-		context->RSSetState(rasterStateSky);
-		context->OMSetDepthStencilState(depthStateSky, 0);
-		context->DrawIndexed(skyCubeEntity->GetMesh()->GetIndexCount(), 0, 0);
-
-		// Reset the render states we've changed
-		context->RSSetState(0);
-		context->OMSetDepthStencilState(0, 0);
-
+		/******************************************************/
+		
 		// Particle states
 		float blend[4] = {1,1,1,1};
 		context->OMSetBlendState(particleBlendState, blend, 0xffffffff);  // Additive blending

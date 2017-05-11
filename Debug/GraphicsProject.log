@@ -1,16 +1,16 @@
 ﻿  Game.cpp
-d:\class stuff\game graphics\graphicsproject\game.h(135): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
-d:\class stuff\game graphics\graphicsproject\game.h(136): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
-d:\class stuff\game graphics\graphicsproject\game.cpp(8): warning C4005: 'max': macro redefinition
+c:\users\ruchi\desktop\graphicsproject\game.h(136): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.h(137): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(8): warning C4005: 'max': macro redefinition
   c:\program files (x86)\windows kits\8.1\include\shared\minwindef.h(193): note: see previous definition of 'max'
-d:\class stuff\game graphics\graphicsproject\game.cpp(9): warning C4005: 'min': macro redefinition
+c:\users\ruchi\desktop\graphicsproject\game.cpp(9): warning C4005: 'min': macro redefinition
   c:\program files (x86)\windows kits\8.1\include\shared\minwindef.h(197): note: see previous definition of 'min'
-d:\class stuff\game graphics\graphicsproject\game.cpp(372): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\class stuff\game graphics\graphicsproject\game.cpp(373): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\class stuff\game graphics\graphicsproject\game.cpp(374): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\class stuff\game graphics\graphicsproject\game.cpp(375): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\class stuff\game graphics\graphicsproject\game.cpp(376): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\class stuff\game graphics\graphicsproject\game.cpp(495): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-cl : Command line warning D9028: minimal rebuild failure, reverting to normal build
-  GraphicsProject.vcxproj -> D:\Class Stuff\Game Graphics\GraphicsProject\Debug\GraphicsProject.exe
-  GraphicsProject.vcxproj -> D:\Class Stuff\Game Graphics\GraphicsProject\Debug\GraphicsProject.pdb (Full PDB)
+c:\users\ruchi\desktop\graphicsproject\game.cpp(374): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\ruchi\desktop\graphicsproject\game.cpp(375): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\ruchi\desktop\graphicsproject\game.cpp(376): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\ruchi\desktop\graphicsproject\game.cpp(377): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\ruchi\desktop\graphicsproject\game.cpp(378): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\ruchi\desktop\graphicsproject\game.cpp(497): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(693): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+  GraphicsProject.vcxproj -> C:\Users\ruchi\Desktop\GraphicsProject\Debug\GraphicsProject.exe
+  GraphicsProject.vcxproj -> C:\Users\ruchi\Desktop\GraphicsProject\Debug\GraphicsProject.pdb (Full PDB)
