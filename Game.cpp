@@ -51,12 +51,31 @@ Game::~Game()
 	// will clean up their own internal DirectX stuff
 	delete vertexShader;
 	delete pixelShader;
-	delete material1;
+	sphereSRV->Release();
+	tileSRV->Release();
+	normalTileSRV->Release();
+	material2SRV->Release();
+	normal2SRV->Release();
+	material3SRV->Release();
+	normal3SRV->Release();
+	material4SRV->Release();
+	normal4SRV->Release();
+	material5SRV->Release();
+	normal5SRV->Release();
+	sampler1->Release();
+
 	delete skyVertexShader;
 	delete skyPixelShader;
-	//delete material2;
+	
 	delete skyCubeMesh;
 	delete skyCubeEntity;
+
+	//Delete all the materials
+	delete material1;
+	delete material2;
+	delete material3;
+	delete material4;
+	delete material5;
 
 	for (auto& e : platformEntity) delete e;
 	//for (auto& m : platformMesh) delete m;
@@ -65,15 +84,13 @@ Game::~Game()
 	delete camera;
 	delete platformMesh;
 
-	sphereSRV->Release();
-	tileSRV->Release();
-	normalTileSRV->Release();
-	sampler1->Release();
-
+	
+	//Clean up sky stuff
 	rasterStateSky->Release();
 	depthStateSky->Release();
 	skySRV1->Release();
 	skySRV2->Release();
+	
 	// Clean up shadow map
 	shadowDSV->Release();
 	shadowSRV->Release();
@@ -247,8 +264,22 @@ void Game::CreateMaterials() {
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Cobble.tif", 0, &sphereSRV);
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Testing_basecolor.png", 0, &tileSRV);
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Testing_normal.png", 0, &normalTileSRV);
+
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/material2.tiff", 0, &material2SRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/normal2.tiff", 0, &normal2SRV);
+
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/material3.tiff", 0, &material3SRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/normal3.tiff", 0, &normal3SRV);
+
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/material4.tiff", 0, &material4SRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/normal4.tiff", 0, &normal4SRV);
+
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/material5.tiff", 0, &material5SRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/normal5.tiff", 0, &normal5SRV);
+
 	CreateDDSTextureFromFile(device, L"Debug/TextureFiles/Stormy.dds", 0, &skySRV1);
 	CreateDDSTextureFromFile(device, L"Debug/TextureFiles/Sunset.dds", 0, &skySRV2);
+
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/particle.jpg", 0, &particleTexture);
 
 	D3D11_SAMPLER_DESC sampleDesc = {};
@@ -261,6 +292,10 @@ void Game::CreateMaterials() {
 	device->CreateSamplerState(&sampleDesc, &sampler1);
 
 	material1 = new Material(pixelShader, vertexShader, tileSRV, normalTileSRV, sampler1);
+	material2 = new Material(pixelShader, vertexShader, material2SRV, normal2SRV, sampler1);
+	material3 = new Material(pixelShader, vertexShader, material3SRV, normal3SRV, sampler1);
+	material4 = new Material(pixelShader, vertexShader, material4SRV, normal4SRV, sampler1);
+	material5 = new Material(pixelShader, vertexShader, material5SRV, normal5SRV, sampler1);
 
 	// Set up the rasterize state
 	D3D11_RASTERIZER_DESC rasterStateDesc = {};
@@ -350,15 +385,14 @@ void Game::CreateMatrices()
 void Game::CreateBasicGeometry()
 {
 	sphereMesh = new Mesh("Debug/Models/sphere.obj", device);
-	
-
 	platformMesh = new Mesh("Debug/Models/cube.obj", device);
 
 	GameEntity* p1 = new GameEntity(platformMesh, material1);
-	GameEntity* p2 = new GameEntity(platformMesh, material1);
-	GameEntity* p3 = new GameEntity(platformMesh, material1);
-	GameEntity* p4 = new GameEntity(platformMesh, material1);
-	GameEntity* p5 = new GameEntity(platformMesh, material1);
+	GameEntity* p2 = new GameEntity(platformMesh, material2);
+	GameEntity* p3 = new GameEntity(platformMesh, material3);
+	GameEntity* p4 = new GameEntity(platformMesh, material4);
+	GameEntity* p5 = new GameEntity(platformMesh, material5);
+
 	platformEntity.push_back(p1);
 	platformEntity.push_back(p2);
 	platformEntity.push_back(p3);
@@ -565,7 +599,7 @@ void Game::Update(float deltaTime, float totalTime)
 		platformEntity[4]->UpdateWorldMatrix();
 		sphereEntity->UpdateWorldMatrix();
 
-		// Changinh alpha value for skybox lerp
+		// Changing alpha value for skybox lerp
 		counterLerp++;                     // Using counter for tracking change
 		if (counterLerp % 100 == 0) {
 			if (lerpState == true) {         // Lerp state used for tracking whether increment or decrement alpha value

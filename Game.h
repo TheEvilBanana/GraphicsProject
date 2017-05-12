@@ -54,6 +54,14 @@ private:
 	ID3D11ShaderResourceView* sphereSRV;
 	ID3D11ShaderResourceView* tileSRV;
 	ID3D11ShaderResourceView* normalTileSRV;
+	ID3D11ShaderResourceView* material2SRV;
+	ID3D11ShaderResourceView* normal2SRV;
+	ID3D11ShaderResourceView* material3SRV;
+	ID3D11ShaderResourceView* normal3SRV;
+	ID3D11ShaderResourceView* material4SRV;
+	ID3D11ShaderResourceView* normal4SRV;
+	ID3D11ShaderResourceView* material5SRV;
+	ID3D11ShaderResourceView* normal5SRV;
 	
 	ID3D11SamplerState* sampler1;
 
@@ -71,6 +79,7 @@ private:
 	float skyLerpValue = 0.0f;
 	int counterLerp = 0;
 	bool lerpState = true;
+	
 	// The matrices to go from model space to screen space
 	DirectX::XMFLOAT4X4 worldMatrix;
 	DirectX::XMFLOAT4X4 viewMatrix;
@@ -115,7 +124,11 @@ private:
 
 	Camera* camera;
 
-	Material *material1;
+	Material* material1;
+	Material* material2;
+	Material* material3;
+	Material* material4;
+	Material* material5;
 
 	float gravity = 20.0f;
 	float speed = 10.0f;
