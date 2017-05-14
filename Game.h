@@ -40,6 +40,7 @@ private:
 	void CreateParticles();
 	void CreateMatrices();
 	void CreateBasicGeometry();
+	void CreatePostProcessResources();
 	void CreateShadow();
 
 	void RenderShadowMap();
@@ -66,6 +67,25 @@ private:
 	ID3D11ShaderResourceView* normal5SRV;
 	
 	ID3D11SamplerState* sampler1;
+
+	// Post process requirements
+	ID3D11RenderTargetView* ppRTV;		// Allows us to render to a texture
+	ID3D11RenderTargetView* bpRTV;
+	ID3D11RenderTargetView* horBlurRTV;
+	ID3D11RenderTargetView* verBlurRTV;
+
+	ID3D11ShaderResourceView* ppSRV;	// Allows us to sample from the same texture
+	ID3D11ShaderResourceView* ppSRV2;
+	ID3D11ShaderResourceView* bpSRV;
+	ID3D11ShaderResourceView* horBlurSRV;
+	ID3D11ShaderResourceView* verBlurSRV;
+
+	SimpleVertexShader* ppVS;
+	SimplePixelShader* ppPS;
+	SimplePixelShader* brightPassPS;
+	SimplePixelShader* horzBlurPS;
+	SimplePixelShader* vertBlurPS;
+	SimplePixelShader* bloomPS;
 
 	//Fade in
 	ID3D11BlendState* fadeBlendState;

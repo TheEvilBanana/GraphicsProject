@@ -88,6 +88,22 @@ Game::~Game()
 	delete camera;
 	delete platformMesh;
 
+	//Post Process clean up
+	delete ppVS;
+	delete ppPS;
+	delete brightPassPS;
+	delete horzBlurPS;
+	delete vertBlurPS;
+	delete bloomPS;
+	ppSRV->Release();
+	ppSRV2->Release();
+	bpSRV->Release();
+	horBlurSRV->Release();
+	verBlurSRV->Release();
+	bpRTV->Release();
+	horBlurRTV->Release();
+	verBlurRTV->Release();
+	ppRTV->Release();
 	
 	//Clean up sky stuff
 	rasterStateSky->Release();
@@ -134,6 +150,7 @@ void Game::Init()
 	CreateParticles();
 	CreateMatrices();
 	CreateBasicGeometry();
+	CreatePostProcessResources();
 	CreateShadow();
 
 	//UI stuff
@@ -210,6 +227,31 @@ void Game::LoadShaders()
 	particlePS = new SimplePixelShader(device, context);
 	if (!particlePS->LoadShaderFile(L"Debug/ParticlePS.cso"))
 		particlePS->LoadShaderFile(L"ParticlePS.cso");
+
+	//Postprocess stuff
+	ppVS = new SimpleVertexShader(device, context);
+	if (!ppVS->LoadShaderFile(L"Debug/PostProcessVS.cso"))
+		ppVS->LoadShaderFile(L"PostProcessVS.cso");
+
+	ppPS = new SimplePixelShader(device, context);
+	if (!ppPS->LoadShaderFile(L"Debug/PostProcessPS.cso"))
+		ppPS->LoadShaderFile(L"PostProcessPS.cso");
+
+	brightPassPS = new SimplePixelShader(device, context);
+	if (!brightPassPS->LoadShaderFile(L"Debug/BrightPassPS.cso"))
+		brightPassPS->LoadShaderFile(L"BrightPassPS.cso");
+
+	horzBlurPS = new SimplePixelShader(device, context);
+	if (!horzBlurPS->LoadShaderFile(L"Debug/BlurHorizontalPS.cso"))
+		horzBlurPS->LoadShaderFile(L"BlurHorizontalPS.cso");
+
+	vertBlurPS = new SimplePixelShader(device, context);
+	if (!vertBlurPS->LoadShaderFile(L"Debug/BlurVerticalPS.cso"))
+		vertBlurPS->LoadShaderFile(L"BlurVerticalPS.cso");
+
+	bloomPS = new SimplePixelShader(device, context);
+	if (!bloomPS->LoadShaderFile(L"Debug/BloomFinalPS.cso"))
+		bloomPS->LoadShaderFile(L"BloomFinalPS.cso");
 }
 
 void Game::CreateMaterials() {
@@ -376,6 +418,109 @@ void Game::CreateBasicGeometry()
 	skyCubeEntity = new GameEntity(skyCubeMesh, material1);
 }
 
+void Game::CreatePostProcessResources()
+{
+	// Create post process resources -----------------------------------------
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = width;
+	textureDesc.Height = height;
+	textureDesc.ArraySize = 1;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.MipLevels = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	ID3D11Texture2D* ppTexture;
+	device->CreateTexture2D(&textureDesc, 0, &ppTexture);
+
+	// Create the Render Target View
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = textureDesc.Format;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	device->CreateRenderTargetView(ppTexture, &rtvDesc, &ppRTV);
+
+	//device->CreateRenderTargetView(ppTexture, &rtvDesc, &horBlurRTV);
+
+	// Create the Shader Resource View
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = textureDesc.Format;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+
+	device->CreateShaderResourceView(ppTexture, &srvDesc, &ppSRV);
+	device->CreateShaderResourceView(ppTexture, &srvDesc, &ppSRV2);
+
+	// We don't need the texture reference itself no mo'
+	ppTexture->Release();
+
+	ID3D11Texture2D* bpTexture;
+	device->CreateTexture2D(&textureDesc, 0, &bpTexture);
+	// Create the Render Target View
+	D3D11_RENDER_TARGET_VIEW_DESC bprtvDesc = {};
+	bprtvDesc.Format = textureDesc.Format;
+	bprtvDesc.Texture2D.MipSlice = 0;
+	bprtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	device->CreateRenderTargetView(bpTexture, &bprtvDesc, &bpRTV);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC bpsrvDesc = {};
+	bpsrvDesc.Format = textureDesc.Format;
+	bpsrvDesc.Texture2D.MipLevels = 1;
+	bpsrvDesc.Texture2D.MostDetailedMip = 0;
+	bpsrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+
+	device->CreateShaderResourceView(bpTexture, &bpsrvDesc, &bpSRV);
+
+	bpTexture->Release();
+
+	ID3D11Texture2D* hbTexture;
+	device->CreateTexture2D(&textureDesc, 0, &hbTexture);
+
+	D3D11_RENDER_TARGET_VIEW_DESC hbrtvDesc = {};
+	hbrtvDesc.Format = textureDesc.Format;
+	hbrtvDesc.Texture2D.MipSlice = 0;
+	hbrtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	device->CreateRenderTargetView(hbTexture, &hbrtvDesc, &horBlurRTV);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC hbsrvDesc = {};
+	hbsrvDesc.Format = textureDesc.Format;
+	hbsrvDesc.Texture2D.MipLevels = 1;
+	hbsrvDesc.Texture2D.MostDetailedMip = 0;
+	hbsrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+
+	device->CreateShaderResourceView(hbTexture, &hbsrvDesc, &horBlurSRV);
+
+	hbTexture->Release();
+
+	ID3D11Texture2D* vbTexture;
+	device->CreateTexture2D(&textureDesc, 0, &vbTexture);
+
+	D3D11_RENDER_TARGET_VIEW_DESC vbrtvDesc = {};
+	vbrtvDesc.Format = textureDesc.Format;
+	vbrtvDesc.Texture2D.MipSlice = 0;
+	vbrtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	device->CreateRenderTargetView(vbTexture, &vbrtvDesc, &verBlurRTV);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC vbsrvDesc = {};
+	vbsrvDesc.Format = textureDesc.Format;
+	vbsrvDesc.Texture2D.MipLevels = 1;
+	vbsrvDesc.Texture2D.MostDetailedMip = 0;
+	vbsrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+
+	device->CreateShaderResourceView(vbTexture, &vbsrvDesc, &verBlurSRV);
+
+	vbTexture->Release();
+}
+
 void Game::CreateShadow()
 {
 	// Create shadow requirements ------------------------------------------
@@ -506,7 +651,8 @@ void Game::RenderShadowMap()
 	}
 
 	// Revert to original targets and states
-	context->OMSetRenderTargets(1, &this->backBufferRTV, this->depthStencilView);
+	//context->OMSetRenderTargets(1, &this->backBufferRTV, this->depthStencilView);
+	context->OMSetRenderTargets(1, &this->ppRTV, this->depthStencilView);
 	shadowVP.Width = (float)this->width;
 	shadowVP.Height = (float)this->height;
 	context->RSSetViewports(1, &shadowVP);
@@ -710,6 +856,11 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 	case GamePlay:
 	{
+		// Post process initial setup =================
+		// Start rendering somewhere else!
+		context->ClearRenderTargetView(ppRTV, color);
+		context->OMSetRenderTargets(1, &ppRTV, depthStencilView);
+
 		//SkyBox
 		vertexBuffer = skyCubeEntity->GetMesh()->GetVertexBuffer();
 		indexBuffer = skyCubeEntity->GetMesh()->GetIndexBuffer();
@@ -735,6 +886,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Reset the render states we've changed
 		context->RSSetState(0);
 		context->OMSetDepthStencilState(0, 0);
+
 		/***************************************************************************/
 		float blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};  // Set blend factor[inconsequential, since not using]
 		context->OMSetBlendState(blendState, blendFactor, 0xFFFFFFFF); // Setting the blend state
@@ -800,6 +952,81 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Reset to default states for next frame
 		context->OMSetBlendState(0, blend, 0xffffffff);
 		context->OMSetDepthStencilState(0, 0);
+
+		// Actually do post processing ========================
+		//Bright Pass
+		context->ClearRenderTargetView(bpRTV, color);
+		context->OMSetRenderTargets(1, &bpRTV, 0);
+
+		ppVS->SetShader();
+
+		brightPassPS->SetShaderResourceView("BrightPassTex", ppSRV);
+		brightPassPS->SetSamplerState("Sampler", sampler1);
+		brightPassPS->CopyAllBufferData();
+		brightPassPS->SetShader();
+		ID3D11Buffer* nothing = 0;
+		context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+		context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+		context->Draw(3, 0);
+		brightPassPS->SetShaderResourceView("BrightPassTex", 0);
+
+		//Horizontal Blur Pass
+		context->ClearRenderTargetView(horBlurRTV, color);
+		context->OMSetRenderTargets(1, &horBlurRTV, 0);
+
+		ppVS->SetShader();
+
+		horzBlurPS->SetInt("blurAmount", 3);
+		horzBlurPS->SetFloat("pixelWidth", 1.0f / (width / 2));
+		horzBlurPS->SetShaderResourceView("HorzBlurTex", bpSRV);
+		horzBlurPS->SetSamplerState("Sampler", sampler1);
+		horzBlurPS->CopyAllBufferData();
+		horzBlurPS->SetShader();
+		ID3D11Buffer* nothing1 = 0;
+		context->IASetVertexBuffers(0, 1, &nothing1, &stride, &offset);
+		context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+		context->Draw(3, 0);
+		horzBlurPS->SetShaderResourceView("HorzBlurTex", 0);
+
+		//Vertical Blur Pass
+		context->ClearRenderTargetView(verBlurRTV, color);
+		context->OMSetRenderTargets(1, &verBlurRTV, 0);
+
+		ppVS->SetShader();
+
+		vertBlurPS->SetInt("blurAmount", 3);
+		vertBlurPS->SetFloat("pixelHeight", 1.0f / (height / 2));
+		vertBlurPS->SetShaderResourceView("VertBlurTex", horBlurSRV);
+		vertBlurPS->SetSamplerState("Sampler", sampler1);
+		vertBlurPS->CopyAllBufferData();
+		vertBlurPS->SetShader();
+		ID3D11Buffer* nothing2 = 0;
+		context->IASetVertexBuffers(0, 1, &nothing2, &stride, &offset);
+		context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+		context->Draw(3, 0);
+		vertBlurPS->SetShaderResourceView("VertBlurTex", 0);
+
+		// Get the shaders ready for post processing
+		// Back to the back buffer
+		context->OMSetRenderTargets(1, &backBufferRTV, 0);
+
+		ppVS->SetShader();
+
+		bloomPS->SetShaderResourceView("AllPassTex", verBlurSRV);
+		bloomPS->SetShaderResourceView("OgTex", ppSRV2);
+		bloomPS->SetSamplerState("Sampler", sampler1);
+		bloomPS->CopyAllBufferData();
+		bloomPS->SetShader();
+
+		ID3D11Buffer* nothing3 = 0;
+		context->IASetVertexBuffers(0, 1, &nothing3, &stride, &offset);
+		context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+
+		// Actually draw exactly 3 vertices
+		context->Draw(3, 0);
+
+		bloomPS->SetShaderResourceView("AllPassTex", 0);
+		bloomPS->SetShaderResourceView("OgTex", 0);
 	}
 		break;
 	case GameOver:
