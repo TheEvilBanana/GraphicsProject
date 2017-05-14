@@ -704,7 +704,23 @@ void Game::Update(float deltaTime, float totalTime)
 			}
 			if (score > 5)
 			{
-				timeScale = deltaTime * 2;
+				timeScale = deltaTime * 1.2;
+			}
+			if (score > 10)
+			{
+				timeScale = deltaTime * 1.4;
+			}
+			if (score > 20)
+			{
+				timeScale = deltaTime * 1.6;
+			}
+			if (score > 40)
+			{
+				timeScale = deltaTime * 1.8;
+			}
+			if (score > 80)
+			{
+				timeScale = deltaTime * 2.0;
 			}
 		}
 		
@@ -736,11 +752,11 @@ void Game::Update(float deltaTime, float totalTime)
 		}
 
 		//Move platforms
-		platformEntity[0]->Move(0, 0, -timeScale * 2);
-		platformEntity[1]->Move(0, 0, -timeScale * 2);
-		platformEntity[2]->Move(0, 0, -timeScale * 2);
-		platformEntity[3]->Move(0, 0, -timeScale * 2);
-		platformEntity[4]->Move(0, 0, -timeScale * 2);
+		platformEntity[0]->Move(0, 0, -timeScale * 2.01);
+		platformEntity[1]->Move(0, 0, -timeScale * 2.01);
+		platformEntity[2]->Move(0, 0, -timeScale * 2.01);
+		platformEntity[3]->Move(0, 0, -timeScale * 2.01);
+		platformEntity[4]->Move(0, 0, -timeScale * 2.01);
 
 		//Move Player
 		if (GetAsyncKeyState('A') & 0x8000)
