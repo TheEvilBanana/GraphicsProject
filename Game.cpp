@@ -70,6 +70,10 @@ Game::~Game()
 	delete skyCubeMesh;
 	delete skyCubeEntity;
 
+	//Fade stuff clean up
+	fadeBlendState->Release();
+	fadeDepthState->Release();
+
 	//Delete all the materials
 	delete material1;
 	delete material2;
@@ -127,8 +131,10 @@ void Game::Init()
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
 	CreateMaterials();
+	CreateParticles();
 	CreateMatrices();
 	CreateBasicGeometry();
+	CreateShadow();
 
 	//UI stuff
 
@@ -139,84 +145,28 @@ void Game::Init()
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/scoreUIBg.png", 0, &scoreUISprite);
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/gameOver.png", 0, &gameOverSprite);
 
-	// Create shadow requirements ------------------------------------------
-	shadowMapSize = 2048;
+	//Fade in stuff ************************
 
+	D3D11_DEPTH_STENCIL_DESC fadeDesc = {};
+	fadeDesc.DepthEnable = true;
+	fadeDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // Turns off depth writing
+	fadeDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	device->CreateDepthStencilState(&fadeDesc, &fadeDepthState);
 
-	// Create the actual texture that will be the shadow map
-	D3D11_TEXTURE2D_DESC shadowDesc = {};
-	shadowDesc.Width = shadowMapSize;
-	shadowDesc.Height = shadowMapSize;
-	shadowDesc.ArraySize = 1;
-	shadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-	shadowDesc.CPUAccessFlags = 0;
-	shadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
-	shadowDesc.MipLevels = 1;
-	shadowDesc.MiscFlags = 0;
-	shadowDesc.SampleDesc.Count = 1;
-	shadowDesc.SampleDesc.Quality = 0;
-	shadowDesc.Usage = D3D11_USAGE_DEFAULT;
-	ID3D11Texture2D* shadowTexture;
-	device->CreateTexture2D(&shadowDesc, 0, &shadowTexture);
-
-	// Create the depth/stencil
-	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = {};
-	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	shadowDSDesc.Texture2D.MipSlice = 0;
-	device->CreateDepthStencilView(shadowTexture, &shadowDSDesc, &shadowDSV);
-
-	// Create the SRV for the shadow map
-	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
-	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = 1;
-	srvDesc.Texture2D.MostDetailedMip = 0;
-	device->CreateShaderResourceView(shadowTexture, &srvDesc, &shadowSRV);
-
-	// Release the texture reference since we don't need it
-	shadowTexture->Release();
-
-	// Create the special "comparison" sampler state for shadows
-	D3D11_SAMPLER_DESC shadowSampDesc = {};
-	shadowSampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // Could be anisotropic
-	shadowSampDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
-	shadowSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-	shadowSampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-	shadowSampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-	shadowSampDesc.BorderColor[0] = 1.0f;
-	shadowSampDesc.BorderColor[1] = 1.0f;
-	shadowSampDesc.BorderColor[2] = 1.0f;
-	shadowSampDesc.BorderColor[3] = 1.0f;
-	device->CreateSamplerState(&shadowSampDesc, &shadowSampler);
-
-	// Create a rasterizer state
-	D3D11_RASTERIZER_DESC shadowRastDesc = {};
-	shadowRastDesc.FillMode = D3D11_FILL_SOLID;
-	shadowRastDesc.CullMode = D3D11_CULL_BACK;
-	shadowRastDesc.DepthClipEnable = true;
-	shadowRastDesc.DepthBias = 1000; // Multiplied by (smallest possible value > 0 in depth buffer)
-	shadowRastDesc.DepthBiasClamp = 0.0f;
-	shadowRastDesc.SlopeScaledDepthBias = 1.0f;
-	device->CreateRasterizerState(&shadowRastDesc, &shadowRasterizer);
-
-	//Blending State
-	//Set up the Blend Desc
-	D3D11_BLEND_DESC blendDesc;                                             
-	ZeroMemory(&blendDesc, sizeof(blendDesc));
-	blendDesc.RenderTarget[0].BlendEnable = TRUE;
-	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-	//Settign the Blend Desc to FALSE [will be be used in 'OMBlendState' in Draw functiom]
-	blendDesc.RenderTarget[0].BlendEnable = FALSE;
-	device->CreateBlendState(&blendDesc, &blendState);
-	
+	// Blend for fade (alpha)
+	D3D11_BLEND_DESC fadeIn = {};
+	fadeIn.AlphaToCoverageEnable = false;
+	fadeIn.IndependentBlendEnable = false;
+	fadeIn.RenderTarget[0].BlendEnable = true;
+	fadeIn.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	fadeIn.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	fadeIn.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	fadeIn.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
+	fadeIn.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	fadeIn.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	fadeIn.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&fadeIn, &fadeBlendState);
+	//Finish fade stuff ************************
 	
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
@@ -312,6 +262,11 @@ void Game::CreateMaterials() {
 	depthStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	device->CreateDepthStencilState(&depthStateDesc, &depthStateSky);
 
+	
+}
+
+void Game::CreateParticles()
+{
 	// Particle states ------------------------
 
 	// A depth state for the particles
@@ -322,7 +277,7 @@ void Game::CreateMaterials() {
 	device->CreateDepthStencilState(&dsDesc, &particleDepthState);
 
 
-	// Blend for particles (additive)
+	// Blend for particles (alpha)
 	D3D11_BLEND_DESC blend = {};
 	blend.AlphaToCoverageEnable = false;
 	blend.IndependentBlendEnable = false;
@@ -353,7 +308,6 @@ void Game::CreateMaterials() {
 		particlePS,
 		particleTexture);
 }
-
 
 // --------------------------------------------------------
 // Initializes the matrices necessary to represent our geometry's 
@@ -420,6 +374,87 @@ void Game::CreateBasicGeometry()
 
 	skyCubeMesh = new Mesh("Debug/Models/cube.obj", device);
 	skyCubeEntity = new GameEntity(skyCubeMesh, material1);
+}
+
+void Game::CreateShadow()
+{
+	// Create shadow requirements ------------------------------------------
+	shadowMapSize = 2048;
+
+
+	// Create the actual texture that will be the shadow map
+	D3D11_TEXTURE2D_DESC shadowDesc = {};
+	shadowDesc.Width = shadowMapSize;
+	shadowDesc.Height = shadowMapSize;
+	shadowDesc.ArraySize = 1;
+	shadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	shadowDesc.CPUAccessFlags = 0;
+	shadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	shadowDesc.MipLevels = 1;
+	shadowDesc.MiscFlags = 0;
+	shadowDesc.SampleDesc.Count = 1;
+	shadowDesc.SampleDesc.Quality = 0;
+	shadowDesc.Usage = D3D11_USAGE_DEFAULT;
+	ID3D11Texture2D* shadowTexture;
+	device->CreateTexture2D(&shadowDesc, 0, &shadowTexture);
+
+	// Create the depth/stencil
+	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = {};
+	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	shadowDSDesc.Texture2D.MipSlice = 0;
+	device->CreateDepthStencilView(shadowTexture, &shadowDSDesc, &shadowDSV);
+
+	// Create the SRV for the shadow map
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	device->CreateShaderResourceView(shadowTexture, &srvDesc, &shadowSRV);
+
+	// Release the texture reference since we don't need it
+	shadowTexture->Release();
+
+	// Create the special "comparison" sampler state for shadows
+	D3D11_SAMPLER_DESC shadowSampDesc = {};
+	shadowSampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // Could be anisotropic
+	shadowSampDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
+	shadowSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.BorderColor[0] = 1.0f;
+	shadowSampDesc.BorderColor[1] = 1.0f;
+	shadowSampDesc.BorderColor[2] = 1.0f;
+	shadowSampDesc.BorderColor[3] = 1.0f;
+	device->CreateSamplerState(&shadowSampDesc, &shadowSampler);
+
+	// Create a rasterizer state
+	D3D11_RASTERIZER_DESC shadowRastDesc = {};
+	shadowRastDesc.FillMode = D3D11_FILL_SOLID;
+	shadowRastDesc.CullMode = D3D11_CULL_BACK;
+	shadowRastDesc.DepthClipEnable = true;
+	shadowRastDesc.DepthBias = 1000; // Multiplied by (smallest possible value > 0 in depth buffer)
+	shadowRastDesc.DepthBiasClamp = 0.0f;
+	shadowRastDesc.SlopeScaledDepthBias = 1.0f;
+	device->CreateRasterizerState(&shadowRastDesc, &shadowRasterizer);
+
+	//Blending State
+	//Set up the Blend Desc
+	D3D11_BLEND_DESC blendDesc;
+	ZeroMemory(&blendDesc, sizeof(blendDesc));
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	//Settign the Blend Desc to FALSE [will be be used in 'OMBlendState' in Draw functiom]
+	blendDesc.RenderTarget[0].BlendEnable = FALSE;
+	device->CreateBlendState(&blendDesc, &blendState);
 }
 
 void Game::RenderShadowMap()
@@ -714,8 +749,24 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->DrawIndexed(sphereEntity->GetMesh()->GetIndexCount(), 0, 0);
 
 		/*********************************************************************************************/
+		float dist;
+		float maxDist;
 
 		for (int i = 0; i <= 4; i++) {
+
+			context->OMSetBlendState(fadeBlendState, 0, 0xffffffff);  // Alpha blending
+
+			dist = 8.1f - platformEntity[i]->GetPosition().z;
+			maxDist = dist * 0.125;
+
+			if (dist <= 0) {
+				pixelShader->SetFloat("alphaV", 0.0f);
+			} else if (dist > 8.0f) {
+				pixelShader->SetFloat("alphaV", 1.0f);
+			} else {
+				pixelShader->SetFloat("alphaV", maxDist);
+			}
+
 			renderer.SetVertexBuffer(platformEntity[i], vertexBuffer);
 			renderer.SetIndexBuffer(platformEntity[i], indexBuffer);
 			renderer.SetVertexShader(vertexShader, platformEntity[i], camera, shadowViewMatrix, shadowProjectionMatrix);
@@ -724,6 +775,8 @@ void Game::Draw(float deltaTime, float totalTime)
 			context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 			context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 			context->DrawIndexed(platformEntity[i]->GetMesh()->GetIndexCount(), 0, 0);
+
+			context->OMSetBlendState(0, 0, 0xffffffff);
 		}
 
 		pixelShader->SetShaderResourceView("ShadowMap", 0);

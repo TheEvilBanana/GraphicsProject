@@ -41,6 +41,7 @@ cbuffer ExternalData : register(b0) {
 	float3 cameraPosition;
 	float3 spotLightDirection;
 	float spotPower;
+	float alphaV;
 };
 
 // --------------------------------------------------------
@@ -88,7 +89,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	float4 surfaceColor = textureSRV.Sample(basicSampler, input.uv);
 
-	float4 light1 = ((dirLight1.diffuseColor * lightAmount1 * surfaceColor) + (dirLight1.ambientColor * surfaceColor)) + specular +spotAmount;
+	float3 light1 = ((dirLight1.diffuseColor.rgb * lightAmount1 * surfaceColor.rgb) + (dirLight1.ambientColor.rgb * surfaceColor.rgb)) + specular + spotAmount;
 	//float4 light2 = ((dirLight2.diffuseColor * lightAmount2 * surfaceColor) + (dirLight2.ambientColor * surfaceColor));
 	//float4 totalLight = light1 + light2;
 
@@ -104,7 +105,8 @@ float4 main(VertexToPixel input) : SV_TARGET
 		depthFromLight
 	);
 
-	return light1 * shadowAmount;
+	surfaceColor.a = alphaV;
+	return float4(light1 * shadowAmount, surfaceColor.a);
 	// Just return the input color
 	// - This color (like most values passing through the rasterizer) is 
 	//   interpolated for each pixel between the corresponding vertices 

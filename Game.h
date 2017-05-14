@@ -37,8 +37,10 @@ private:
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadShaders();
 	void CreateMaterials();
+	void CreateParticles();
 	void CreateMatrices();
 	void CreateBasicGeometry();
+	void CreateShadow();
 
 	void RenderShadowMap();
 
@@ -64,6 +66,10 @@ private:
 	ID3D11ShaderResourceView* normal5SRV;
 	
 	ID3D11SamplerState* sampler1;
+
+	//Fade in
+	ID3D11BlendState* fadeBlendState;
+	ID3D11DepthStencilState* fadeDepthState;
 
 	//Sky
 	ID3D11ShaderResourceView* skySRV1;
