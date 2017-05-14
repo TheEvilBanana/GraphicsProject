@@ -146,6 +146,7 @@ private:
 	ID3D11ShaderResourceView* playButtonSprite;
 	ID3D11ShaderResourceView* quitButtonSprite;
 	ID3D11ShaderResourceView* scoreUISprite;
+	ID3D11ShaderResourceView* gameOverSprite;
 	XMFLOAT2 playSpritePosition = XMFLOAT2(width / 2, height / 2);
 	XMFLOAT2 quitSpritePosition = XMFLOAT2(width / 2, height / 2 + 200);
 	bool mouseAtPlay = false;
@@ -157,6 +158,7 @@ private:
 	{
 		MainMenu,
 		GamePlay,
+		GameOver,
 		Exit
 	};
 	GameStateManager gameState;

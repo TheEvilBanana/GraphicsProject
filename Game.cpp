@@ -105,6 +105,7 @@ Game::~Game()
 	playButtonSprite->Release();
 	quitButtonSprite->Release();
 	scoreUISprite->Release();
+	gameOverSprite->Release();
 
 	//Clean up particle
 	delete emitter;
@@ -136,7 +137,8 @@ void Game::Init()
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanplaypanel.png", 0, &playButtonSprite);
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanquitpanel.png", 0, &quitButtonSprite);
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/scoreUIBg.png", 0, &scoreUISprite);
-	
+	CreateWICTextureFromFile(device, L"Debug/TextureFiles/gameOver.png", 0, &gameOverSprite);
+
 	// Create shadow requirements ------------------------------------------
 	shadowMapSize = 2048;
 
@@ -582,6 +584,10 @@ void Game::Update(float deltaTime, float totalTime)
 				platformCount++;
 				
 			}
+			else
+			{
+				gameState = GameOver;
+			}
 		}
 
 		speed = speed - (gravity * timeScale);
@@ -743,7 +749,11 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->OMSetDepthStencilState(0, 0);
 	}
 		break;
-	
+	case GameOver:
+		spriteBatch->Begin();
+		spriteBatch->Draw(gameOverSprite, XMFLOAT2(width / 2, height / 2));
+		spriteBatch->End();
+		break;
 	case Exit:
 		Quit();
 		break;
