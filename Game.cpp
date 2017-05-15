@@ -159,8 +159,8 @@ void Game::Init()
 	spriteBatch.reset(new SpriteBatch(context));
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanplaypanel.png", 0, &playButtonSprite);
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanquitpanel.png", 0, &quitButtonSprite);
-	CreateWICTextureFromFile(device, L"Debug/TextureFiles/scoreUIBg.png", 0, &scoreUISprite);
-	CreateWICTextureFromFile(device, L"Debug/TextureFiles/gameOver.png", 0, &gameOverSprite);
+	CreateWICTextureFromFile(device, L"Debug/TextureFiles/Score_New.png", 0, &scoreUISprite);
+	CreateWICTextureFromFile(device, L"Debug/TextureFiles/GameOver_resampled.png", 0, &gameOverSprite);
 
 	//Fade in stuff ************************
 
@@ -256,20 +256,20 @@ void Game::LoadShaders()
 
 void Game::CreateMaterials() {
 	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Cobble.tif", 0, &sphereSRV);
-	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Testing_basecolor.png", 0, &tileSRV);
-	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Testing_normal.png", 0, &normalTileSRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Cobblestone.tiff", 0, &tileSRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Cobblestone_Normal.tiff", 0, &normalTileSRV);
 
-	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/material2.tiff", 0, &material2SRV);
-	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/normal2.tiff", 0, &normal2SRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Glass.tiff", 0, &material2SRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Glass_Normal.tiff", 0, &normal2SRV);
 
-	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/material3.tiff", 0, &material3SRV);
-	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/normal3.tiff", 0, &normal3SRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Grass.tiff", 0, &material3SRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Grass_Normal.tiff", 0, &normal3SRV);
 
-	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/material4.tiff", 0, &material4SRV);
-	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/normal4.tiff", 0, &normal4SRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Ice.tiff", 0, &material4SRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/Ice_Normal.tiff", 0, &normal4SRV);
 
-	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/material5.tiff", 0, &material5SRV);
-	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/normal5.tiff", 0, &normal5SRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/LavaRocks.tiff", 0, &material5SRV);
+	CreateWICTextureFromFile(device, context, L"Debug/TextureFiles/LavaRocks_Normal.tiff", 0, &normal5SRV);
 
 	CreateDDSTextureFromFile(device, L"Debug/TextureFiles/Stormy.dds", 0, &skySRV1);
 	CreateDDSTextureFromFile(device, L"Debug/TextureFiles/Sunset.dds", 0, &skySRV2);
