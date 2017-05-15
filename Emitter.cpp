@@ -106,6 +106,8 @@ void Emitter::setParticleSpawn() {
 	spawnParticle == true;
 }
 
+
+
 void Emitter::Update(float dt)
 {
 	// Update all particles - Check cyclic buffer first
@@ -297,4 +299,9 @@ void Emitter::Draw(ID3D11DeviceContext* context, Camera* camera)
 		context->DrawIndexed((maxParticles - firstAliveIndex) * 6, firstAliveIndex * 6, 0);
 	}
 
+}
+
+void Emitter::SetEmitterPosition(DirectX::XMFLOAT3 pos)
+{
+	emitterPosition = pos;
 }

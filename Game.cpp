@@ -777,6 +777,7 @@ void Game::Update(float deltaTime, float totalTime)
 				speed = constSpeed;
 				score++;
 				printf("%d", score);
+				emitter->SetEmitterPosition(sphereEntity->GetPosition());
 				emitter->SpawnParticle();
 				platformCount++;
 				

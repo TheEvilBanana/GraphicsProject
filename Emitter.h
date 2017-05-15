@@ -53,7 +53,7 @@ public:
 	void CopyOneParticle(int index);
 	void Draw(ID3D11DeviceContext* context, Camera* camera);
 	void setParticleSpawn();
-
+	void SetEmitterPosition(DirectX::XMFLOAT3 pos);
 private:
 	bool spawnParticle = false;
 
