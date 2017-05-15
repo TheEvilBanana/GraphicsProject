@@ -45,7 +45,7 @@ void Renderer::SetPixelShader(SimplePixelShader* &pixelShader, GameEntity* &game
 	pixelShader->SetFloat4("pointLightColor", XMFLOAT4(0.1, 0.1f, 1, 1));
 	pixelShader->SetFloat3("cameraPosition", XMFLOAT3(0, 0, -5));
 
-	pixelShader->SetFloat3("spotLightDirection", XMFLOAT3(0, 3, 2));
+	pixelShader->SetFloat3("spotLightDirection", XMFLOAT3(0, 3, 3));
 	pixelShader->SetFloat("spotPower", 0.5);
 
 	pixelShader->SetShaderResourceView("textureSRV", gameEntity->GetMaterial()->GetMaterialSRV());
