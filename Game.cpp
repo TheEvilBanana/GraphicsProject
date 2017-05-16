@@ -157,6 +157,7 @@ void Game::Init()
 
 	//Import Play Button Sprite
 	spriteBatch.reset(new SpriteBatch(context));
+	spriteFont.reset(new SpriteFont(device, L"Arial.spriteFont"));
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanplaypanel.png", 0, &playButtonSprite);
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanquitpanel.png", 0, &quitButtonSprite);
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/Score_New.png", 0, &scoreUISprite);
@@ -951,8 +952,16 @@ void Game::Draw(float deltaTime, float totalTime)
 		pixelShader->SetShaderResourceView("ShadowMap", 0);
 		/***************************************************/
 		//Score UI
+
+		//Converting int to wchar_t to render it
+		std::string scoreString = std::to_string(score).c_str();
+		std::wstring ss(scoreString.begin(), scoreString.end());
+		const wchar_t* scoreS = ss.c_str();
+		//---------------------------------------
+		
 		spriteBatch->Begin();
 		spriteBatch->Draw(scoreUISprite, XMFLOAT2(width / 2 - 600, height / 2 - 350));
+		spriteFont->DrawString(spriteBatch.get(), scoreS, XMFLOAT2(100, 100));
 		spriteBatch->End();
 
 

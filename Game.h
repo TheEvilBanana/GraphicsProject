@@ -10,6 +10,7 @@
 #include <vector>
 #include <DirectXMath.h>
 #include "SpriteBatch.h"
+#include "SpriteFont.h"
 #include "Emitter.h"
 
 class Game 
@@ -169,6 +170,7 @@ private:
 
 	//UI stuff
 	std::unique_ptr<SpriteBatch> spriteBatch;
+	std::unique_ptr<SpriteFont> spriteFont;
 	ID3D11ShaderResourceView* playButtonSprite;
 	ID3D11ShaderResourceView* quitButtonSprite;
 	ID3D11ShaderResourceView* scoreUISprite;
