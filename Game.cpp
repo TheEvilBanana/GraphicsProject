@@ -162,8 +162,8 @@ void Game::Init()
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanplaypanel.png", 0, &playButtonSprite);
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanquitpanel.png", 0, &quitButtonSprite);
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/Score_New.png", 0, &scoreUISprite);
-	CreateWICTextureFromFile(device, L"Debug/TextureFiles/GameOverUI.png", 0, &gameOverSprite);
-	CreateWICTextureFromFile(device, L"Debug/TextureFiles/StartScreen.jpg", 0, &backgroundSprite);
+	CreateWICTextureFromFile(device, L"Debug/TextureFiles/GameOverUINew.png", 0, &gameOverSprite);
+	CreateWICTextureFromFile(device, L"Debug/TextureFiles/StartScreen.png", 0, &backgroundSprite);
 
 	//Fade in stuff ************************
 

@@ -176,8 +176,8 @@ private:
 	ID3D11ShaderResourceView* scoreUISprite;
 	ID3D11ShaderResourceView* gameOverSprite;
 	ID3D11ShaderResourceView* backgroundSprite;
-	XMFLOAT2 playSpritePosition = XMFLOAT2(width / 2, height / 2);
-	XMFLOAT2 quitSpritePosition = XMFLOAT2(width / 2, height / 2 + 200);
+	XMFLOAT2 playSpritePosition = XMFLOAT2(width / 2 - 200, height / 2 + 275);
+	XMFLOAT2 quitSpritePosition = XMFLOAT2(width / 2 + 200, height / 2 + 275);
 	bool mouseAtPlay = false;
 	bool mouseAtQuit = false;
 
