@@ -963,7 +963,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		
 		spriteBatch->Begin();
 		spriteBatch->Draw(scoreUISprite, XMFLOAT2(width / 2 - 600, height / 2 - 350));
-		spriteFont->DrawString(spriteBatch.get(), scoreS, XMFLOAT2(350, 50));
+		spriteFont->DrawString(spriteBatch.get(), scoreS, XMFLOAT2(width/2-300,height/2-310));
 		spriteBatch->End();
 
 

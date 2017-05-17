@@ -23,5 +23,6 @@ c:\users\ruchi\desktop\graphicsproject\game.cpp(761): warning C4244: 'argument':
 c:\users\ruchi\desktop\graphicsproject\game.cpp(762): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 c:\users\ruchi\desktop\graphicsproject\game.cpp(932): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\ruchi\desktop\graphicsproject\game.cpp(965): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(966): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
   GraphicsProject.vcxproj -> C:\Users\ruchi\Desktop\GraphicsProject\Debug\GraphicsProject.exe
   GraphicsProject.vcxproj -> C:\Users\ruchi\Desktop\GraphicsProject\Debug\GraphicsProject.pdb (Full PDB)
