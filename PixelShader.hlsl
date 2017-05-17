@@ -33,12 +33,17 @@ struct DirectionalLight {
 	float3 direction;
 
 };
+
 cbuffer ExternalData : register(b0) {
 	DirectionalLight dirLight1;
-	//DirectionalLight dirLight2;
+	DirectionalLight dirLight2;
+	DirectionalLight dirLight3;
 	float4 pointLightColor;
 	float3 pointLightPosition;
 	float3 cameraPosition;
+	float4 pointLightColor1;
+	float3 pointLightPosition1;
+	float3 cameraPosition1;
 	float3 spotLightDirection;
 	float spotPower;
 	float alphaV;
@@ -57,59 +62,66 @@ float4 main(VertexToPixel input) : SV_TARGET
 {
 
 	input.normal = normalize(input.normal);
-    input.tangent = normalize(input.tangent);
+input.tangent = normalize(input.tangent);
 
-	//N dot L for point light
-	float3 dirToPointLight = normalize(pointLightPosition - input.worldPos);
-	float lightAmountPL = saturate(dot(input.normal, dirToPointLight));
+//N dot L for point light
+float3 dirToPointLight = normalize(pointLightPosition - input.worldPos);
+float lightAmountPL = saturate(dot(input.normal, dirToPointLight));
 
-	//Spot Light calculation
-	float angleFromCenter = max(dot(-dirToPointLight, spotLightDirection), 0.0f);
-	float spotAmount = pow(angleFromCenter, spotPower);
+//N dot L for point light
+float3 dirToPointLight1 = normalize(pointLightPosition1 - input.worldPos);
+float lightAmountPL1 = saturate(dot(input.normal, dirToPointLight1));
 
 
-	//Specular highlight for point light
-	float3 toCamera = normalize(cameraPosition - input.worldPos);
-	float3 refl = reflect(-dirToPointLight, input.normal);
-	float specular = pow(saturate(dot(refl, toCamera)), 8);
+//Spot Light calculation
+float angleFromCenter = max(dot(-dirToPointLight, spotLightDirection), 0.0f);
+float spotAmount = pow(angleFromCenter, spotPower);
 
-	float3 normalFromMap = normalMapSRV.Sample(basicSampler, input.uv).xyz * 2 - 1;
 
-	// Transform from tangent to world space
-	float3 N = input.normal;
-	float3 T = normalize(input.tangent - N * dot(input.tangent, N));
-	float3 B = cross(T, N);
+//Specular highlight for point light
+float3 toCamera = normalize(cameraPosition - input.worldPos);
+float3 refl = reflect(-dirToPointLight, input.normal);
+float specular = pow(saturate(dot(refl, toCamera)), 8);
 
-	float3x3 TBN = float3x3(T, B, N);
-	input.normal = normalize(mul(normalFromMap, TBN));
-	
-	float lightAmount1 = saturate(dot(input.normal, -normalize(dirLight1.direction)));
+float3 normalFromMap = normalMapSRV.Sample(basicSampler, input.uv).xyz * 2 - 1;
 
-	//float lightAmount2 = saturate(dot(input.normal, -normalize(dirLight2.direction)));
+// Transform from tangent to world space
+float3 N = input.normal;
+float3 T = normalize(input.tangent - N * dot(input.tangent, N));
+float3 B = cross(T, N);
 
-	float4 surfaceColor = textureSRV.Sample(basicSampler, input.uv);
+float3x3 TBN = float3x3(T, B, N);
+input.normal = normalize(mul(normalFromMap, TBN));
 
-	float3 light1 = ((dirLight1.diffuseColor.rgb * lightAmount1 * surfaceColor.rgb) + (dirLight1.ambientColor.rgb * surfaceColor.rgb)) + specular + spotAmount;
-	//float4 light2 = ((dirLight2.diffuseColor * lightAmount2 * surfaceColor) + (dirLight2.ambientColor * surfaceColor));
-	//float4 totalLight = light1 + light2;
+float lightAmount1 = saturate(dot(input.normal, -normalize(dirLight1.direction)));
+float lightAmount2 = saturate(dot(input.normal, -normalize(dirLight2.direction)));
+float lightAmount3 = saturate(dot(input.normal, -normalize(dirLight3.direction)));
 
-	//Shadow Mapping
-	float2 shadowUV = input.posForShadow.xy / input.posForShadow.w * 0.5f + 0.5f;
-	shadowUV.y = 1.0f - shadowUV.y;
+float4 surfaceColor = textureSRV.Sample(basicSampler, input.uv);
 
-	float depthFromLight = input.posForShadow.z / input.posForShadow.w;
+float3 light1 = ((dirLight1.diffuseColor.rgb * lightAmount1 * surfaceColor.rgb) + (dirLight1.ambientColor.rgb * surfaceColor.rgb)) + specular + spotAmount;
+float3 light2 = ((dirLight2.diffuseColor * lightAmount2 * surfaceColor) + (dirLight2.ambientColor * surfaceColor));
+float3 light3 = ((dirLight3.diffuseColor * lightAmount3 * surfaceColor) + (dirLight3.ambientColor * surfaceColor));
 
-	float shadowAmount = ShadowMap.SampleCmpLevelZero(
-		ShadowSampler,
-		shadowUV,
-		depthFromLight
-	);
+float3 totalLight = light1 + light2 + light3;
 
-	surfaceColor.a = alphaV;
-	return float4(light1 * shadowAmount, surfaceColor.a);
-	// Just return the input color
-	// - This color (like most values passing through the rasterizer) is 
-	//   interpolated for each pixel between the corresponding vertices 
-	//   of the triangle we're rendering
-	//return float4(1.0f, 0.0f, 0.0f, 1.0f);
+//Shadow Mapping
+float2 shadowUV = input.posForShadow.xy / input.posForShadow.w * 0.5f + 0.5f;
+shadowUV.y = 1.0f - shadowUV.y;
+
+float depthFromLight = input.posForShadow.z / input.posForShadow.w;
+
+float shadowAmount = ShadowMap.SampleCmpLevelZero(
+	ShadowSampler,
+	shadowUV,
+	depthFromLight
+);
+
+surfaceColor.a = alphaV;
+return float4(totalLight * shadowAmount, surfaceColor.a);
+// Just return the input color
+// - This color (like most values passing through the rasterizer) is 
+//   interpolated for each pixel between the corresponding vertices 
+//   of the triangle we're rendering
+//return float4(1.0f, 0.0f, 0.0f, 1.0f);
 }

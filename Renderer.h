@@ -27,6 +27,7 @@ private:
 	SimpleVertexShader* vertexShaderRender;
 	SimplePixelShader* pixelShaderRender;
 	DirectionalLight dirLight1;
-	//DirectionalLight dirLight2;
+	DirectionalLight dirLight2;
+	DirectionalLight dirLight3;
 };
 

@@ -3,7 +3,7 @@
 
 
 Renderer::Renderer() {
-	
+
 }
 
 
@@ -12,7 +12,8 @@ Renderer::~Renderer() {
 
 void Renderer::SetLights() {
 	dirLight1.SetLightValues(XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, -1.0f, 0));
-	//dirLight2.SetLightValues(XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(-1.0f, -1.0f, 0));
+	dirLight2.SetLightValues(XMFLOAT4(1.000, 0.871, 0.678,1.0), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(-1.0f, +1.0f, 0));
+	dirLight3.SetLightValues(XMFLOAT4(0.502, 0.000, 0.000,1.00), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(-1.0f, +3.0f, 0));
 }
 
 void Renderer::SetVertexBuffer(GameEntity* &gameEntity, ID3D11Buffer* &vertexBuffer) {
@@ -31,7 +32,7 @@ void Renderer::SetVertexShader(SimpleVertexShader* &vertexShader, GameEntity* &g
 
 	vertexShader->SetMatrix4x4("shadowView", shadowViewMatrix);
 	vertexShader->SetMatrix4x4("shadowProj", shadowProjectionMatrix);
-	
+
 	vertexShader->CopyAllBufferData();
 	vertexShader->SetShader();
 }
@@ -40,7 +41,11 @@ void Renderer::SetPixelShader(SimplePixelShader* &pixelShader, GameEntity* &game
 	SetLights();
 	pixelShader = gameEntity->GetMaterial()->GetPixelShader();
 	pixelShader->SetData("dirLight1", &dirLight1, sizeof(DirectionalLight));
-	//pixelShader->SetData("dirLight2", &dirLight2, sizeof(DirectionalLight));
+	pixelShader->SetData("dirLight2", &dirLight2, sizeof(DirectionalLight));
+	pixelShader->SetData("dirLight3", &dirLight3, sizeof(DirectionalLight));
+
+
+
 	pixelShader->SetFloat3("pointLightPosition", XMFLOAT3(2, 2, 0));
 	pixelShader->SetFloat4("pointLightColor", XMFLOAT4(0.1, 0.1f, 1, 1));
 	pixelShader->SetFloat3("cameraPosition", XMFLOAT3(0, 0, -5));

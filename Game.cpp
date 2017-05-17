@@ -126,6 +126,7 @@ Game::~Game()
 	quitButtonSprite->Release();
 	scoreUISprite->Release();
 	gameOverSprite->Release();
+	backgroundSprite->Release();
 
 	//Clean up particle
 	delete emitter;
@@ -157,11 +158,12 @@ void Game::Init()
 
 	//Import Play Button Sprite
 	spriteBatch.reset(new SpriteBatch(context));
-	spriteFont.reset(new SpriteFont(device, L"Arial.spriteFont"));
+	spriteFont.reset(new SpriteFont(device, L"Debug/TextureFiles/Arial.spriteFont"));
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanplaypanel.png", 0, &playButtonSprite);
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/cyanquitpanel.png", 0, &quitButtonSprite);
 	CreateWICTextureFromFile(device, L"Debug/TextureFiles/Score_New.png", 0, &scoreUISprite);
-	CreateWICTextureFromFile(device, L"Debug/TextureFiles/GameOver_resampled.png", 0, &gameOverSprite);
+	CreateWICTextureFromFile(device, L"Debug/TextureFiles/GameOverUI.png", 0, &gameOverSprite);
+	CreateWICTextureFromFile(device, L"Debug/TextureFiles/StartScreen.jpg", 0, &backgroundSprite);
 
 	//Fade in stuff ************************
 
@@ -865,7 +867,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	{
 	case MainMenu:
 		spriteBatch->Begin();
-
+		spriteBatch->Draw(backgroundSprite, XMFLOAT2(0, 0));
 		spriteBatch->Draw(playButtonSprite, playSpritePosition);
 		spriteBatch->Draw(quitButtonSprite, quitSpritePosition);
 
@@ -961,7 +963,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		
 		spriteBatch->Begin();
 		spriteBatch->Draw(scoreUISprite, XMFLOAT2(width / 2 - 600, height / 2 - 350));
-		spriteFont->DrawString(spriteBatch.get(), scoreS, XMFLOAT2(100, 100));
+		spriteFont->DrawString(spriteBatch.get(), scoreS, XMFLOAT2(350, 50));
 		spriteBatch->End();
 
 
@@ -1057,7 +1059,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		break;
 	case GameOver:
 		spriteBatch->Begin();
-		spriteBatch->Draw(gameOverSprite, XMFLOAT2(width / 2, height / 2));
+		spriteBatch->Draw(gameOverSprite, XMFLOAT2(0,0));
 		spriteBatch->End();
 		break;
 	case Exit:

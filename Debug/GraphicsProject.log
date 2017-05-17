@@ -1,28 +1,27 @@
 ﻿  Game.cpp
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.h(178): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.h(179): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(8): warning C4005: 'max': macro redefinition
+c:\users\ruchi\desktop\graphicsproject\game.h(179): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.h(180): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(8): warning C4005: 'max': macro redefinition
   c:\program files (x86)\windows kits\8.1\include\shared\minwindef.h(193): note: see previous definition of 'max'
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(9): warning C4005: 'min': macro redefinition
+c:\users\ruchi\desktop\graphicsproject\game.cpp(9): warning C4005: 'min': macro redefinition
   c:\program files (x86)\windows kits\8.1\include\shared\minwindef.h(197): note: see previous definition of 'min'
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(407): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(408): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(409): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(410): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(411): warning C4305: 'argument': truncation from 'double' to 'float'
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(708): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(712): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(716): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(720): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(724): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(731): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(756): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(757): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(758): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(759): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(760): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(930): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(963): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
-d:\game design and development\sem 2\game graphics programming\graphicsproject\game.cpp(1060): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
-  GraphicsProject.vcxproj -> D:\Game Design and Development\Sem 2\Game Graphics Programming\GraphicsProject\Debug\GraphicsProject.exe
-  GraphicsProject.vcxproj -> D:\Game Design and Development\Sem 2\Game Graphics Programming\GraphicsProject\Debug\GraphicsProject.pdb (Full PDB)
+c:\users\ruchi\desktop\graphicsproject\game.cpp(409): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\ruchi\desktop\graphicsproject\game.cpp(410): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\ruchi\desktop\graphicsproject\game.cpp(411): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\ruchi\desktop\graphicsproject\game.cpp(412): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\ruchi\desktop\graphicsproject\game.cpp(413): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\ruchi\desktop\graphicsproject\game.cpp(710): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(714): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(718): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(722): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(726): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(733): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(758): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(759): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(760): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(761): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(762): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(932): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\ruchi\desktop\graphicsproject\game.cpp(965): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+  GraphicsProject.vcxproj -> C:\Users\ruchi\Desktop\GraphicsProject\Debug\GraphicsProject.exe
+  GraphicsProject.vcxproj -> C:\Users\ruchi\Desktop\GraphicsProject\Debug\GraphicsProject.pdb (Full PDB)
